@@ -1,0 +1,16 @@
+[Unit]
+Description=Linky
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+WorkingDirectory=/home/franck
+ExecStart=/usr/bin/python3 /home/franck/domotik/linky/main.py
+User=franck
+Group=franck
+Restart=on-failure
+RestartSec=10s
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
