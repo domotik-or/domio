@@ -41,33 +41,37 @@ async def _task_linky():
     global _smaxsn
     global _smaxsn_1
 
-    while _running:
-        try:
+    try:
+        while _running:
             line_bytes = (await _reader.readline()).strip()
-        except KeyboardInterrupt:
-            break
-        line = line_bytes.decode()
-        parts = line.split('\t')
 
-        if len(parts) >= 2:
-            checksum = parts[-1]
-            ok = chr((sum(line_bytes[:-1]) & 0x3f) + 0x20) == checksum
-            if ok and parts[0] in [
-                "EAST", "EASF01", "EASF02", "SINSTS", "SMAXSN", "SMAXSN-1"
-            ]:
-                # print(parts)
-                if parts[0] == "EAST":
-                    _east = int(parts[1], 10)
-                elif parts[0] == "EASF01":
-                    _easf01 = int(parts[1], 10)
-                elif parts[0] == "EASF02":
-                    _easf02 = int(parts[1], 10)
-                elif parts[0] == "SINSTS":
-                    _sinsts = int(parts[1], 10)
-                elif parts[0] == "SMAXSN":
-                    _smaxsn = int(parts[2], 10)
-                elif parts[0] == "SMAXSN-1":
-                    _smaxsn_1 = int(parts[2], 10)
+            try:
+                line = line_bytes.decode()
+            except UnicodeDecodeError:
+                continue
+            parts = line.split('\t')
+
+            if len(parts) >= 2:
+                checksum = parts[-1]
+                ok = chr((sum(line_bytes[:-1]) & 0x3f) + 0x20) == checksum
+                if ok and parts[0] in [
+                    "EAST", "EASF01", "EASF02", "SINSTS", "SMAXSN", "SMAXSN-1"
+                ]:
+                    # print(parts)
+                    if parts[0] == "EAST":
+                        _east = int(parts[1], 10)
+                    elif parts[0] == "EASF01":
+                        _easf01 = int(parts[1], 10)
+                    elif parts[0] == "EASF02":
+                        _easf02 = int(parts[1], 10)
+                    elif parts[0] == "SINSTS":
+                        _sinsts = int(parts[1], 10)
+                    elif parts[0] == "SMAXSN":
+                        _smaxsn = int(parts[2], 10)
+                    elif parts[0] == "SMAXSN-1":
+                        _smaxsn_1 = int(parts[2], 10)
+    except KeyboardInterrupt:
+        return
 
 
 async def close():
