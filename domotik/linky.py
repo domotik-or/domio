@@ -31,9 +31,9 @@ async def init():
     _reader, _ = await serial_asyncio.open_serial_connection(
         url=config.linky.serial_port,
         baudrate=config.linky.baudrate,
-        bytesize=get_data(serial, config.linky.bytesize),
-        parity=get_data(serial, config.linky.parity),
-        stopbits=get_data(serial, config.linky.stopbits)
+        bytesize=getattr(serial, config.linky.bytesize),
+        parity=getattr(serial, config.linky.parity),
+        stopbits=getattr(serial, config.linky.stopbits)
     )
 
     _task = asyncio.create_task(_task_linky())

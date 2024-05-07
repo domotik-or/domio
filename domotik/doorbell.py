@@ -7,7 +7,7 @@ import logging
 
 import pigpio
 
-import doorbell.config as config
+import domotik.config as config
 
 _callback = None
 _pi = None
@@ -25,11 +25,11 @@ async def init():
         _pi = pigpio.pi()
 
     _pi.set_mode(config.doorbell.bell_gpio, pigpio.OUTPUT)
-    _pi.set_mode(config.door_button.gpio, pigpio.INPUT)
+    _pi.set_mode(config.doorbell.button_gpio, pigpio.INPUT)
 
     _callback = _pi.callback(
         config.doorbell.button_gpio,
-        pigpio.RAISING_EDGE,
+        pigpio.RISING_EDGE,
         __callback
     )
 
@@ -37,18 +37,22 @@ async def init():
 async def __ding_dong():
     global _task
 
-    sequence = (2, 2, 0.5, 0.5, 3, 3)
+    sequence = (2, 2, 1, 1, 2, 2)
     state = True
 
     try:
         for s in sequence:
-            _pi.write(config.doorbell.gpio, state)
+            if state:
+                logger.debug("ding")
+            else:
+                logger.debug("dong")
+            _pi.write(config.doorbell.bell_gpio, state)
             await asyncio.sleep(s)
-        state = not state
+            state = not state
         if not _running:
             return
     finally:
-        _pi.write(config.doorbell.gpio, False)
+        _pi.write(config.doorbell.bell_gpio, False)
         _task = None
 
 
@@ -58,7 +62,7 @@ def __callback():
 
 
 async def close():
-    global _callcack
+    global _callback
     global _pi
     global _running
 
@@ -82,6 +86,8 @@ async def run(config_filename: str):
     await init()
 
     await asyncio.sleep(1)
+
+    __callback()
 
     while _running:
         await asyncio.sleep(1)

@@ -9,3 +9,7 @@ baudrate = 9600
 bytesize = "SEVENBITS"
 parity = "PARITY_EVEN"
 stopbits="STOPBITS_ONE"
+
+[logger]
+linky = "DEBUG"
+doorbell = "DEBUG"

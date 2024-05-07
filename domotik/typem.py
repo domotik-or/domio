@@ -12,10 +12,12 @@ class DoorbellConfig:
 
 @dataclass
 class LinkyConfig:
-    serial_port: str
+    server_port: int
+    serial_port: int
     baudrate: int
+    bytesize: str
+    stopbits: str
     parity: str
-    databits: int
 
 
 @dataclass
