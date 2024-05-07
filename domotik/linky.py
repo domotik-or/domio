@@ -1,7 +1,12 @@
+#!/usr/bin/env python3
+
 import asyncio
+import logging
 
 import serial
 import serial_asyncio
+
+import domotik.config as config
 
 
 _reader = None
@@ -16,17 +21,19 @@ _sinsts = 0
 _smaxsn = 0
 _smaxsn_1 = 0
 
+logger = logging.getLogger(__name__)
+
 
 async def init():
     global _reader
     global _task
 
     _reader, _ = await serial_asyncio.open_serial_connection(
-        url="/dev/ttyAMA0",
-        baudrate=9600,
-        bytesize=serial.SEVENBITS,
-        parity=serial.PARITY_EVEN,
-        stopbits=serial.STOPBITS_ONE
+        url=config.linky.serial_port,
+        baudrate=config.linky.baudrate,
+        bytesize=get_data(serial, config.linky.bytesize),
+        parity=get_data(serial, config.linky.parity),
+        stopbits=get_data(serial, config.linky.stopbits)
     )
 
     _task = asyncio.create_task(_task_linky())
@@ -93,6 +100,7 @@ def get_data():
     }
 
 
+# main is used for test purpose as standalone
 async def main():
     global _running
 
@@ -108,6 +116,14 @@ async def main():
 
 
 if __name__ == "__main__":
+    import sys
+
+    handler = logging.StreamHandler(stream=sys.stdout)
+    formatter = logging.Formatter("%(asctime)s %(module)s %(levelname)s %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+
     try:
         asyncio.run(main())
     except KeyboardInterrupt:

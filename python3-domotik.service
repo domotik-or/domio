@@ -4,10 +4,10 @@ StartLimitIntervalSec=300
 StartLimitBurst=5
 
 [Service]
-WorkingDirectory=/home/franck
-ExecStart=/usr/bin/python3 /home/franck/domotik/linky/main.py
-User=franck
-Group=franck
+WorkingDirectory=/home/domotik
+ExecStart=/usr/bin/python3 /home/domotik/python3-domotik/domotik/main.py
+User=domotik
+Group=domotik
 Restart=on-failure
 RestartSec=10s
 KillSignal=SIGINT
