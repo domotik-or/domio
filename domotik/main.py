@@ -9,19 +9,28 @@ import sys
 from aiohttp import web
 # import aiohttp_cors
 
+from domotik.bmp180 import init as init_bmp180
+from domotik.bmp180 import close as close_bmp180
+from domotik.bmp180 import get_pressure as get_pressure_data
 import domotik.config as config
 from domotik.doorbell import close as close_doorbell
 from domotik.doorbell import init as init_doorbell
+import domotik.i2c as i2c
 from domotik.linky import close as close_linky
-from domotik.linky import get_data
+from domotik.linky import get_data as get_linky_data
 from domotik.linky import init as init_linky
 from utils import get_project_root
 
 logger = logging.getLogger()
 
 
-async def index_handler(request):
-    data = get_data()
+async def linky_handler(request):
+    data = get_linky_data()
+    return web.json_response(data)
+
+
+async def pressure_handler(request):
+    data = get_pressure_data()
     return web.json_response(data)
 
 
@@ -39,6 +48,9 @@ async def startup(app):
         module_logger = getattr(module, "logger")
         module_logger.setLevel(lg_config.level)
 
+    i2c.open_bus(config.i2c.bus)
+
+    init_bmp180()
     await init_doorbell()
     await init_linky()
 
@@ -46,8 +58,11 @@ async def startup(app):
 # TODO: future use
 # async def close():
 async def cleanup(app):
+    await close_bmp180()
     await close_doorbell()
     await close_linky()
+
+    i2c.close_bus
 
 
 async def make_app():
@@ -57,7 +72,8 @@ async def make_app():
     app.on_startup.append(startup)
     app.on_cleanup.append(cleanup)
 
-    app.router.add_get("/", index_handler)
+    app.router.add_get("/linky", linky_handler)
+    app.router.add_get("/pressure", pressure_handler)
 
     # cors = aiohttp_cors.setup(app, defaults={
     #     "*": aiohttp_cors.ResourceOptions(

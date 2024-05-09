@@ -11,6 +11,15 @@ class DoorbellConfig:
 
 
 @dataclass
+class GeneralConfig:
+    altitude: float
+
+
+@dataclass
+class I2cConfig:
+    bus: int
+
+@dataclass
 class LinkyConfig:
     server_port: int
     serial_port: int

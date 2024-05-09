@@ -2,6 +2,12 @@
 bell_gpio = 23
 button_gpio = 24
 
+[general]
+altitude = 326.0
+
+[i2c]
+bus = 1
+
 [linky]
 server_port = 8080
 serial_port = "/dev/ttyAMA0"
