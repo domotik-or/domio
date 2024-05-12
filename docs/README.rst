@@ -67,7 +67,6 @@ I2C
 ===== ========= ================
 Carte Composant Adresse (7 bits)
 ===== ========= ================
-ADC
 PRE   BMP180A   0x77
 RTC   DS3231    0x68
 ===== ========= ================
@@ -75,22 +74,93 @@ RTC   DS3231    0x68
 UART
 ....
 
-Du fait de la suppression de la liaison Bluetooth, il semble que les numéros
-soient décalés :
-
-- 2 → 1 ;
-- 3 → 2 ;
-- etc.
-
 ===== ==== ============ ================ ======= =======
 Carte Port Device       Configuration    Gpio Tx Gpio Rx
 ===== ==== ============ ================ ======= =======
 ZIG   USB  /dev/ttyACM0 \-               \-      \-
 LKY   \-   /dev/ttyAMA0 9600, 7, 1, E    14      15
-\-    \-   /dev/ttyAMA1 \-               4       5
-\-    \-   /dev/ttyAMA2 \-               8       9
-\-    \-   /dev/ttyAMA3 \-               12      13
+\-    \-   /dev/ttyAMA1 \-               14      15
+\-    \-   /dev/ttyAMA2 \-               0       1
+\-    \-   /dev/ttyAMA3 \-               4       5
+\-    \-   /dev/ttyAMA4 \-               8       9
+\-    \-   /dev/ttyAMA5 \-               12      13
 ===== ==== ============ ================ ======= =======
+
+Extrait de https://raspberrypi.stackexchange.com/questions/45570/how-do-i-make-serial-work-on-the-raspberry-pi3-pizerow-pi4-or-later-models/107780#107780 :
+
+.. table:: Tableau d'affection des signaux des uarts
+
+    ===== === === === === ========
+    UART  TXD RXD CTS RTS Alt
+    ===== === === === === ========
+    uart0 14  15
+    uart1 14  15
+    uart2 0   1   2   3   I2C0
+    uart3 4   5   6   7
+    uart4 8   9   10  11  SPI0
+    uart5 12  13  14  15  gpio-fan
+    ===== === === === === ========
+
+You CAN use uart2 on Pi4 but need to disable other uses of GPIO0/1 with
+`force_eeprom_read=0` & `disable_poe_fan=1`.
+
+Affectation des pins
+--------------------
+
+La table ci-dessous est l'inventaire des broches du bus du Raspberry Pi et de
+leur affectation.
+
+.. table:: Tableau d'affection des signaux du bus du Raspberry Pi
+
+    === ==== ===========================================
+    Pin Gpio Affectation
+    === ==== ===========================================
+    1   \-   3.3V
+    2   \-   5V
+    3   2    GPIO | **I2C - SDA**
+    4   \-   5V
+    5   3    GPIO | **I2C - SCL**
+    6   \-   GND
+    7   4    GPIO | GPCLK0 | UART /dev/ttyAMA3 - TX
+    8   14   GPIO | UART /dev/ttyAMA0 - TX
+    9   \-   GND
+    10  15   GPIO
+    11  17   GPIO
+    12  18   GPIO | PCMCLK
+    13  27   GPIO
+    14  \-   GND
+    15  22   GPIO
+    16  23   **GPIO - out : Carillon**
+    17  \-   3.3V
+    18  24   **GPIO - in : Bouton de sonnette**
+    19  10   GPIO | MOSI
+    20  \-   GND
+    21  9    GPIO | MISO | UART /dev/ttyAMA4 - RX
+    22  25   GPIO
+    23  11   GPIO | SCLK
+    24  8    GPIO | CE0 | UART /dev/ttyAMA4 - TX
+    25  GND  \-
+    26  7    GPIO | CE1
+    27  0    GPIO | ID_SD | UART /dev/ttyAMA2 - TX
+    28  1    GPIO | ID_SC | UART /dev/ttyAMA2 - RX
+    29  5    GPIO | UART /dev/ttyAMA3 - RX
+    30  \-   GND
+    31  6    GPIO
+    32  12   GPIO | PWM0 | UART /dev/ttyAMA5 - TX
+    33  13   GPIO | PWM1 | UART /dev/ttyAMA5 - RX
+    34  \-   GND
+    35  19   GPIO | PCM_FS
+    36  16   GPIO
+    37  26   GPIO
+    38  20   GPIO | PCM_DIN
+    39  \-   GND
+    40  21   GPIO | PCM_DOUT
+    === ==== ===========================================
+
+.. figure:: GPIO-Pinout-Diagram-2.png
+    :width: 100%
+
+    Détail du connecteur de 40 broches du Raspberry Pi 4 B
 
 Installation
 ============
@@ -111,6 +181,7 @@ autre partition que celle souhaitée avec des conséquences dramatiques...).
     wget https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-03-15/2024-03-15-raspios-bookworm-arm64-lite.img.xz
     unxz 2024-03-15-raspios-bookworm-arm64-lite.img.xz
     sudo dd bs=1M if=2024-03-15-raspios-bookworm-arm64-lite.img of=/dev/sdX
+    sudo sync
 
 Activer la sortie vidéo composite
 ---------------------------------
@@ -127,6 +198,7 @@ Le câble dont je disposais n'était pas le bon : Ground sur le contact 4
 - Audio non connectée.
 
 .. image:: Model-B-Plus-Audio-Video-Jack-Diagram.png
+    :width: 80%
 
 Source de l'image : https://forums.raspberrypi.com/viewtopic.php?t=83446
 
@@ -318,6 +390,11 @@ Installation de packages supplémentaires
 
     sudo install git pigpio i2c-tools picocom
     sudo install python3-setuptools python3-pip
+
+Démarrage du daemon `pigpiod` :
+
+    sudo systemctl start pigpiod
+    sudo systemctl enable pigpiod
 
 Installation de l'application
 -----------------------------
