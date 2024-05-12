@@ -2,6 +2,7 @@
 Description=Linky
 StartLimitIntervalSec=300
 StartLimitBurst=5
+After=pigpiod.service
 
 [Service]
 WorkingDirectory=/home/domotik/python3-domotik

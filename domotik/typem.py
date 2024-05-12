@@ -27,8 +27,3 @@ class LinkyConfig:
     bytesize: str
     stopbits: str
     parity: str
-
-
-@dataclass
-class LoggerConfig:
-    level: int

@@ -12,6 +12,7 @@ from aiohttp import web
 from domotik.bmp180 import init as init_bmp180
 from domotik.bmp180 import close as close_bmp180
 from domotik.bmp180 import get_pressure as get_pressure_data
+from domotik.bmp180 import get_temperature as get_temperature_data
 import domotik.config as config
 from domotik.doorbell import close as close_doorbell
 from domotik.doorbell import init as init_doorbell
@@ -22,6 +23,11 @@ from domotik.linky import init as init_linky
 from utils import get_project_root
 
 logger = logging.getLogger()
+handler = logging.StreamHandler(stream=sys.stdout)
+formatter = logging.Formatter("%(asctime)s %(module)s %(levelname)s %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 
 async def linky_handler(request):
@@ -34,19 +40,22 @@ async def pressure_handler(request):
     return web.json_response(data)
 
 
+async def temperature_handler(request):
+    data = get_temperature_data()
+    return web.json_response(data)
+
+
 # TODO: future use
 # async def init():
 async def startup(app):
     # set log level of modules' loggers
-    project_root = get_project_root()
-    for lg_name, lg_config in config.loggers.items():
-        module_name = f"{project_root}.{lg_name}"
-        try:
-            module = sys.modules[module_name]
-        except KeyError:
-            module = importlib.import_module(f"{project_root}.{lg_name}")
-        module_logger = getattr(module, "logger")
-        module_logger.setLevel(lg_config.level)
+    for lg_name, lg_level in config.loggers.items():
+        if lg_name == "root":
+            logger.setLevel(lg_level)
+        else:
+            module = sys.modules[lg_name]
+            module_logger = getattr(module, "logger")
+            module_logger.setLevel(lg_level)
 
     i2c.open_bus(config.i2c.bus)
 
@@ -74,6 +83,7 @@ async def make_app():
 
     app.router.add_get("/linky", linky_handler)
     app.router.add_get("/pressure", pressure_handler)
+    app.router.add_get("/temperature", temperature_handler)
 
     # cors = aiohttp_cors.setup(app, defaults={
     #     "*": aiohttp_cors.ResourceOptions(

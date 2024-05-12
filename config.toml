@@ -16,6 +16,16 @@ bytesize = "SEVENBITS"
 parity = "PARITY_EVEN"
 stopbits="STOPBITS_ONE"
 
-[logger]
-linky = "DEBUG"
-doorbell = "DEBUG"
+[[logger]]
+
+[logger.root]
+level = "DEBUG"
+
+[logger.domotik.linky]
+level = "INFO"
+
+[logger.domotik.doorbell]
+level = "INFO"
+
+[logger.domotik.bmp180]
+level = "INFO"

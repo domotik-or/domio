@@ -10,6 +10,7 @@ import pigpio
 import domotik.config as config
 
 _callback = None
+_loop = None
 _pi = None
 _running = True
 _task = None
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 async def init():
     global _callback
+    global _loop
     global _pi
 
     if _pi is None:
@@ -26,6 +28,10 @@ async def init():
 
     _pi.set_mode(config.doorbell.bell_gpio, pigpio.OUTPUT)
     _pi.set_mode(config.doorbell.button_gpio, pigpio.INPUT)
+    # debouncing is not needed since the sensor's output has a schmitt trigger
+    # _pi.set_glitch_filter(config.doorbell.button_gpio, 500)
+
+    _loop = asyncio.get_event_loop()
 
     _callback = _pi.callback(
         config.doorbell.button_gpio,
@@ -56,9 +62,14 @@ async def __ding_dong():
         _task = None
 
 
-def __callback():
+def __callback(gpio: int, level: int, tick: int):
+    # the callback is running in a different thread than the main one
     global _task
-    _task = asyncio.create_task(__ding_dong())
+    logger.debug("button pressed")
+    if _task is None:
+        # the task is run using the loop of the main thread
+        # enabling _task to be tested without using a critical section
+        _task = _loop.create_task(__ding_dong())
 
 
 async def close():
@@ -87,7 +98,7 @@ async def run(config_filename: str):
 
     await asyncio.sleep(1)
 
-    __callback()
+    __callback(0, 0, 0)
 
     while _running:
         await asyncio.sleep(1)

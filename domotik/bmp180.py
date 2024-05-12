@@ -27,7 +27,7 @@ import logging
 
 from smbus2 import SMBus
 
-import i2c
+import domotik.i2c as i2c
 
 # BMP180 default address.
 BMP180_I2C_ADDR = 0x77
@@ -63,6 +63,7 @@ _bmp180 = None
 _pressure = 0.0
 _running = True
 _task = None
+_temperature = 0.0
 
 logger = logging.getLogger(__name__)
 
@@ -297,10 +298,12 @@ async def close():
 async def __task():
     global _pressure
     global _running
+    global _temperature
 
     _running = True
     while _running:
         _pressure = await _bmp180.read_sealevel_pressure(_altitude)
+        _temperature = await _bmp180.read_temperature()
         await asyncio.sleep(5)
 
 
@@ -324,6 +327,10 @@ def set_altitude(altitude: float):
 
 def get_pressure() -> float:
     return _pressure
+
+
+def get_temperature() -> float:
+    return _temperature
 
 
 # main is used for test purpose as standalone
