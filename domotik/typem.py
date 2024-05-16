@@ -19,6 +19,7 @@ class GeneralConfig:
 class I2cConfig:
     bus: int
 
+
 @dataclass
 class LinkyConfig:
     server_port: int

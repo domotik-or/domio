@@ -28,8 +28,7 @@ async def init():
 
     _pi.set_mode(config.doorbell.bell_gpio, pigpio.OUTPUT)
     _pi.set_mode(config.doorbell.button_gpio, pigpio.INPUT)
-    # debouncing is not needed since the sensor's output has a schmitt trigger
-    # _pi.set_glitch_filter(config.doorbell.button_gpio, 500)
+    _pi.set_glitch_filter(config.doorbell.button_gpio, 500)
 
     _loop = asyncio.get_event_loop()
 
@@ -43,20 +42,17 @@ async def init():
 async def __ding_dong():
     global _task
 
-    sequence = (2, 2, 1, 1, 2, 2)
-    state = True
-
     try:
-        for s in sequence:
-            if state:
-                logger.debug("ding")
-            else:
-                logger.debug("dong")
-            _pi.write(config.doorbell.bell_gpio, state)
-            await asyncio.sleep(s)
-            state = not state
-        if not _running:
-            return
+        for s in range(5):
+            _pi.write(config.doorbell.bell_gpio, True)
+            await asyncio.sleep(1.2)
+            logger.debug("ding")
+
+            _pi.write(config.doorbell.bell_gpio, False)
+            await asyncio.sleep(1.2)
+            logger.debug("dong")
+            if not _running:
+                return
     finally:
         _pi.write(config.doorbell.bell_gpio, False)
         _task = None
@@ -65,7 +61,7 @@ async def __ding_dong():
 def __callback(gpio: int, level: int, tick: int):
     # the callback is running in a different thread than the main one
     global _task
-    logger.debug("button pressed")
+    logger.info("button pressed")
     if _task is None:
         # the task is run using the loop of the main thread
         # enabling _task to be tested without using a critical section

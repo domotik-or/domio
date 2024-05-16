@@ -12,6 +12,7 @@ from aiohttp import web
 from domotik.bmp180 import init as init_bmp180
 from domotik.bmp180 import close as close_bmp180
 from domotik.bmp180 import get_pressure as get_pressure_data
+from domotik.bmp180 import get_sea_level_pressure as get_sea_level_pressure_data
 from domotik.bmp180 import get_temperature as get_temperature_data
 import domotik.config as config
 from domotik.doorbell import close as close_doorbell
@@ -40,6 +41,11 @@ async def pressure_handler(request):
     return web.json_response(data)
 
 
+async def pressure_at_sea_level_handler(request):
+    data = get_sea_level_pressure_data()
+    return web.json_response(data)
+
+
 async def temperature_handler(request):
     data = get_temperature_data()
     return web.json_response(data)
@@ -59,7 +65,7 @@ async def startup(app):
 
     i2c.open_bus(config.i2c.bus)
 
-    init_bmp180()
+    init_bmp180(config.general.altitude)
     await init_doorbell()
     await init_linky()
 
@@ -83,6 +89,7 @@ async def make_app():
 
     app.router.add_get("/linky", linky_handler)
     app.router.add_get("/pressure", pressure_handler)
+    app.router.add_get("/pressure/sealevel", pressure_at_sea_level_handler)
     app.router.add_get("/temperature", temperature_handler)
 
     # cors = aiohttp_cors.setup(app, defaults={

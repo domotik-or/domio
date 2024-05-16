@@ -22,11 +22,13 @@
 # This copy is different from the original : Modified by Franck Barbenoire
 # (fbarbenoire@gmail.com)
 
+import argparse
 import asyncio
 import logging
 
 from smbus2 import SMBus
 
+import domotik.config as config
 import domotik.i2c as i2c
 
 # BMP180 default address.
@@ -268,19 +270,15 @@ class Bmp180:
         logger.debug(f"Altitude: {altitude} m")
         return altitude
 
-    async def read_sealevel_pressure(self, altitude_m=0.0) -> float:
-        """Calculates the pressure at sealevel when given a known altitude in
-        meters. Returns a value in Pascals."""
-        pressure = float(await self.read_pressure())
-        p0 = pressure / pow(1.0 - altitude_m / 44330.0, 5.255)
-        logger.debug(f"Sealevel pressure: {p0} Pa")
-        return p0
 
-
-def init():
+def init(altitude: float):
+    global _altitude
     global _bmp180
     global _task
 
+    i2c.open_bus(config.i2c.bus)
+
+    _altitude = altitude
     _bmp180 = Bmp180(i2c.get_bus())
 
     if _task is None:
@@ -302,35 +300,36 @@ async def __task():
 
     _running = True
     while _running:
-        _pressure = await _bmp180.read_sealevel_pressure(_altitude)
+        _pressure = await _bmp180.read_pressure()
         _temperature = await _bmp180.read_temperature()
+        logger.debug(f"temperature: {_temperature}°C, pressure: {_pressure:f} Pa")
         await asyncio.sleep(5)
-
-
-async def run():
-    init(9)
-
-    # pressure = await _bmp180.read_pressure()
-    pressure = await _bmp180.read_sealevel_pressure(326.0)
-    temperature = await _bmp180.read_temperature()
-
-    print(f"temperature: {temperature}°C, pressure: {pressure} hPa")
-
-    await close()
-
-
-def set_altitude(altitude: float):
-    global _altitude
-
-    _altitude = altitude
 
 
 def get_pressure() -> float:
     return _pressure
 
 
+def get_sea_level_pressure() -> float:
+    return _pressure / pow(1.0 - _altitude / 44330.0, 5.255)
+
+
 def get_temperature() -> float:
     return _temperature
+
+
+async def run(config_filename: str):
+    config.read(config_filename)
+
+    init(config.i2c.bus)
+
+    # pressure = await _bmp180.read_pressure()
+    pressure = await _bmp180.read_pressure()
+    temperature = await _bmp180.read_temperature()
+
+    print(f"temperature: {temperature}°C, pressure: {pressure} Pa")
+
+    await close()
 
 
 # main is used for test purpose as standalone
@@ -343,9 +342,13 @@ if __name__ == "__main__":
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG)
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--config", default="config.toml")
+    args = parser.parse_args()
+
     loop = asyncio.get_event_loop()
     try:
-        loop.run_until_complete(run())
+        loop.run_until_complete(run(args.config))
     except KeyboardInterrupt:
         pass
     finally:

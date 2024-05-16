@@ -4,10 +4,12 @@ from pathlib import Path
 import tomli
 
 from domotik.typem import DoorbellConfig
+from domotik.typem import GeneralConfig
 from domotik.typem import I2cConfig
 from domotik.typem import LinkyConfig
 
 doorbell = None
+general = None
 i2c = None
 linky = None
 
@@ -36,6 +38,9 @@ def read(config_filename: str):
 
     global doorbell
     doorbell = DoorbellConfig(**raw_config["doorbell"])
+
+    global general
+    general = GeneralConfig(**raw_config["general"])
 
     global i2c
     i2c = I2cConfig(**raw_config["i2c"])

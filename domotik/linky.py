@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import asyncio
 import logging
 
@@ -60,23 +61,31 @@ async def _task_linky():
 
             if len(parts) >= 2:
                 checksum = parts[-1]
-                ok = chr((sum(line_bytes[:-1]) & 0x3f) + 0x20) == checksum
-                if ok and parts[0] in [
-                    "EAST", "EASF01", "EASF02", "SINSTS", "SMAXSN", "SMAXSN-1"
-                ]:
-                    # print(parts)
-                    if parts[0] == "EAST":
-                        _east = int(parts[1], 10)
-                    elif parts[0] == "EASF01":
-                        _easf01 = int(parts[1], 10)
-                    elif parts[0] == "EASF02":
-                        _easf02 = int(parts[1], 10)
-                    elif parts[0] == "SINSTS":
-                        _sinsts = int(parts[1], 10)
-                    elif parts[0] == "SMAXSN":
-                        _smaxsn = int(parts[2], 10)
-                    elif parts[0] == "SMAXSN-1":
-                        _smaxsn_1 = int(parts[2], 10)
+                crc_ok = chr((sum(line_bytes[:-1]) & 0x3f) + 0x20) == checksum
+                if crc_ok:
+                    logger.debug(parts[0])
+
+                    if parts[0] in [
+                        "EAST", "EASF01", "EASF02", "SINSTS", "SMAXSN", "SMAXSN-1"
+                    ]:
+                        # print(parts)
+                        if parts[0] == "EAST":
+                            _east = int(parts[1], 10)
+                        elif parts[0] == "EASF01":
+                            _easf01 = int(parts[1], 10)
+                        elif parts[0] == "EASF02":
+                            _easf02 = int(parts[1], 10)
+                        elif parts[0] == "SINSTS":
+                            _sinsts = int(parts[1], 10)
+                        elif parts[0] == "SMAXSN":
+                            _smaxsn = int(parts[2], 10)
+                        elif parts[0] == "SMAXSN-1":
+                            _smaxsn_1 = int(parts[2], 10)
+                        else:
+                            continue
+                else:
+                    logger.debug("invalid checksum")
+
     except KeyboardInterrupt:
         return
 
@@ -101,8 +110,10 @@ def get_data():
 
 
 # main is used for test purpose as standalone
-async def main():
+async def run(config_filename: str):
     global _running
+
+    config.read(config_filename)
 
     await init()
 
@@ -124,7 +135,16 @@ if __name__ == "__main__":
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG)
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--config", default="config.toml")
+    args = parser.parse_args()
+
+    loop = asyncio.get_event_loop()
     try:
-        asyncio.run(main())
+        loop.run_until_complete(run(args.config))
     except KeyboardInterrupt:
         pass
+    finally:
+        loop.run_until_complete(close())
+        loop.stop()
+        logger.info("application stopped")
