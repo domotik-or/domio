@@ -33,22 +33,22 @@ logger.setLevel(logging.INFO)
 
 async def linky_handler(request):
     data = get_linky_data()
-    return web.json_response(data)
+    return web.json_response({"linky": data})
 
 
 async def pressure_handler(request):
     data = get_pressure_data()
-    return web.json_response(data)
+    return web.json_response({"pressure": data})
 
 
 async def pressure_at_sea_level_handler(request):
     data = get_sea_level_pressure_data()
-    return web.json_response(data)
+    return web.json_response({"sea-level-pressure": data})
 
 
 async def temperature_handler(request):
     data = get_temperature_data()
-    return web.json_response(data)
+    return web.json_response({"temperature": data})
 
 
 # TODO: future use

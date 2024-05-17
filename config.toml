@@ -9,7 +9,7 @@ altitude = 326.0
 bus = 1
 
 [linky]
-server_port = 8080
+server_port = 8100
 serial_port = "/dev/ttyAMA0"
 baudrate = 9600
 bytesize = "SEVENBITS"
