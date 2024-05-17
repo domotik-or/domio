@@ -54,6 +54,8 @@ async def temperature_handler(request):
 # TODO: future use
 # async def init():
 async def startup(app):
+    logging.getLogger("aiohttp").addHandler(logging.NullHandler)
+
     # set log level of modules' loggers
     for lg_name, lg_level in config.loggers.items():
         if lg_name == "root":
