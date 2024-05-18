@@ -28,3 +28,9 @@ class LinkyConfig:
     bytesize: str
     stopbits: str
     parity: str
+
+
+@dataclass
+class MqttConfig:
+    host: str
+    port: int

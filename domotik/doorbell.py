@@ -4,8 +4,10 @@ import argparse
 import asyncio
 import importlib
 import logging
+import time
 
 import pigpio
+from aiomqtt import Client
 
 import domotik.config as config
 
@@ -41,6 +43,9 @@ async def init():
 
 async def __ding_dong():
     global _task
+
+    async with Client(config.mqtt.host, config.mqtt.port) as client:
+        await client.publish("home/doorbell/timestamp", payload=f"{time.time()}")
 
     try:
         for s in range(5):
