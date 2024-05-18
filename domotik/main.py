@@ -33,26 +33,24 @@ logger.setLevel(logging.INFO)
 
 async def linky_handler(request):
     data = get_linky_data()
-    return web.json_response({"linky": data})
+    return web.json_response({"data": data})
 
 
 async def pressure_handler(request):
-    data = get_pressure_data()
-    return web.json_response({"pressure": data})
+    value = get_pressure_data()
+    return web.json_response({"data": {"pressure": value}})
 
 
 async def pressure_at_sea_level_handler(request):
-    data = get_sea_level_pressure_data()
-    return web.json_response({"sea-level-pressure": data})
+    value = get_sea_level_pressure_data()
+    return web.json_response({"data": {"sea-level-pressure": value}})
 
 
 async def temperature_handler(request):
-    data = get_temperature_data()
-    return web.json_response({"temperature": data})
+    value = get_temperature_data()
+    return web.json_response({"data": {"temperature": value}})
 
 
-# TODO: future use
-# async def init():
 async def startup(app):
     logging.getLogger("aiohttp").addHandler(logging.NullHandler)
 
@@ -72,8 +70,6 @@ async def startup(app):
     await init_linky()
 
 
-# TODO: future use
-# async def close():
 async def cleanup(app):
     await close_bmp180()
     await close_doorbell()
