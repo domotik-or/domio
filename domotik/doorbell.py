@@ -40,17 +40,28 @@ async def init():
         __callback
     )
 
+    asyncio.create_task(__subscribe())
+
+
+async def __publish():
+    async with Client(config.mqtt.host, config.mqtt.port) as client:
+        await client.publish("home/doorbell/timestamp", payload=f"{time.time()}")
+
+
+def __callback(gpio: int, level: int, tick: int):
+    if _task is None:
+        # don't send notification if the bell is ringing
+        logger.info("door bell button pressed")
+        _loop.create_task(__publish())
+
 
 async def __ding_dong():
     global _task
 
-    async with Client(config.mqtt.host, config.mqtt.port) as client:
-        await client.publish("home/doorbell/timestamp", payload=f"{time.time()}")
-
     try:
         for s in range(5):
             _pi.write(config.doorbell.bell_gpio, True)
-            await asyncio.sleep(1.2)
+            await asyncio.sleep(0.8)
             logger.debug("ding")
 
             _pi.write(config.doorbell.bell_gpio, False)
@@ -63,14 +74,17 @@ async def __ding_dong():
         _task = None
 
 
-def __callback(gpio: int, level: int, tick: int):
-    # the callback is running in a different thread than the main one
+async def __subscribe():
     global _task
-    logger.info("button pressed")
-    if _task is None:
-        # the task is run using the loop of the main thread
-        # enabling _task to be tested without using a critical section
-        _task = _loop.create_task(__ding_dong())
+
+    async with Client(config.mqtt.host, config.mqtt.port) as client:
+        await client.subscribe("home/doorbell/ring")
+        async for message in client.messages:
+            if _task is None:
+                logger.info("ring the bell")
+                # the task is run using the loop of the main thread
+                # enabling _task to be tested without using a critical section
+                _task = _loop.create_task(__ding_dong())
 
 
 async def close():
