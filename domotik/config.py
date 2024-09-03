@@ -8,14 +8,15 @@ from domotik.typem import GeneralConfig
 from domotik.typem import I2cConfig
 from domotik.typem import LinkyConfig
 from domotik.typem import MqttConfig
+from domotik.typem import UpsConfig
 
 doorbell = None
 general = None
 i2c = None
 linky = None
-mqtt = None
-
 loggers = {}
+mqtt = None
+ups = None
 
 _module = []
 
@@ -50,8 +51,12 @@ def read(config_filename: str):
     global linky
     linky = LinkyConfig(**raw_config["linky"])
 
+    global loggers
+    parse_log_config(raw_config["logger"][0])
+
     global mqtt
     mqtt = MqttConfig(**raw_config["mqtt"])
 
-    global loggers
-    parse_log_config(raw_config["logger"][0])
+    global ups
+    ups = UpsConfig(**raw_config["ups"])
+

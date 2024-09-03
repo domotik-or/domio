@@ -21,6 +21,7 @@ import domotik.i2c as i2c
 from domotik.linky import close as close_linky
 from domotik.linky import get_data as get_linky_data
 from domotik.linky import init as init_linky
+from domotik.ups import init as init_ups
 from utils import get_project_root
 
 logger = logging.getLogger()
@@ -68,6 +69,7 @@ async def startup(app):
     init_bmp180(config.general.altitude)
     await init_doorbell()
     await init_linky()
+    await init_ups()
 
 
 async def cleanup(app):

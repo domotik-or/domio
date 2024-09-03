@@ -34,3 +34,9 @@ class LinkyConfig:
 class MqttConfig:
     host: str
     port: int
+
+
+@dataclass
+class UpsConfig:
+    ac220_gpio: int
+    buzzer_gpio: int

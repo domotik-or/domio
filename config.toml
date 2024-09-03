@@ -1,12 +1,12 @@
-[doorbell]
-bell_gpio = 23
-button_gpio = 24
-
 [general]
 altitude = 326.0
 
 [i2c]
 bus = 1
+
+[doorbell]
+bell_gpio = 23
+button_gpio = 24
 
 [linky]
 server_port = 8100
@@ -15,6 +15,10 @@ baudrate = 9600
 bytesize = "SEVENBITS"
 parity = "PARITY_EVEN"
 stopbits="STOPBITS_ONE"
+
+[ups]
+ac220_gpio = 6
+buzzer_gpio = 5
 
 [mqtt]
 host = "localhost"
@@ -25,11 +29,14 @@ port = 1883
 [logger.root]
 level = "DEBUG"
 
-[logger.domotik.linky]
+[logger.domotik.bmp180]
 level = "INFO"
 
 [logger.domotik.doorbell]
 level = "INFO"
 
-[logger.domotik.bmp180]
+[logger.domotik.linky]
+level = "INFO"
+
+[logger.domotik.ups]
 level = "INFO"

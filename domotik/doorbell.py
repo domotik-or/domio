@@ -115,10 +115,9 @@ async def run(config_filename: str):
 
     __callback(0, 0, 0)
 
-    while _running:
-        await asyncio.sleep(1)
-    else:
-        logger.debug("loop end")
+    await asyncio.sleep(20)
+
+    await close()
 
 
 # main is used for test purpose as standalone
@@ -135,12 +134,9 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--config", default="config.toml")
     args = parser.parse_args()
 
-    loop = asyncio.get_event_loop()
     try:
-        loop.run_until_complete(run(args.config))
+        asyncio.run(args.config))
     except KeyboardInterrupt:
         pass
-    finally:
-        loop.run_until_complete(close())
-        loop.stop()
-        logger.info("application stopped")
+
+    logger.info("application stopped")

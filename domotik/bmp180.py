@@ -346,11 +346,9 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--config", default="config.toml")
     args = parser.parse_args()
 
-    loop = asyncio.get_event_loop()
     try:
-        loop.run_until_complete(run(args.config))
+        asyncio.run(run(args.config))
     except KeyboardInterrupt:
         pass
-    finally:
-        loop.run_until_complete(close())
-        loop.stop()
+
+    logger.info("application stopped")
