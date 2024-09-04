@@ -61,12 +61,12 @@ async def __ding_dong():
     try:
         for s in range(5):
             _pi.write(config.doorbell.bell_gpio, True)
-            await asyncio.sleep(0.8)
             logger.debug("ding")
+            await asyncio.sleep(0.8)
 
             _pi.write(config.doorbell.bell_gpio, False)
-            await asyncio.sleep(1.2)
             logger.debug("dong")
+            await asyncio.sleep(1.2)
             if not _running:
                 return
     finally:
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     try:
-        asyncio.run(args.config))
+        asyncio.run(run(args.config))
     except KeyboardInterrupt:
         pass
 

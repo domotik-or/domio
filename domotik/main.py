@@ -9,11 +9,11 @@ import sys
 from aiohttp import web
 # import aiohttp_cors
 
-from domotik.bmp180 import init as init_bmp180
-from domotik.bmp180 import close as close_bmp180
-from domotik.bmp180 import get_pressure as get_pressure_data
-from domotik.bmp180 import get_sea_level_pressure as get_sea_level_pressure_data
-from domotik.bmp180 import get_temperature as get_temperature_data
+from domotik.bmp280 import init as init_bmp280
+from domotik.bmp280 import close as close_bmp280
+from domotik.bmp280 import get_pressure as get_pressure_data
+from domotik.bmp280 import get_sea_level_pressure as get_sea_level_pressure_data
+from domotik.bmp280 import get_temperature as get_temperature_data
 import domotik.config as config
 from domotik.doorbell import close as close_doorbell
 from domotik.doorbell import init as init_doorbell
@@ -60,20 +60,23 @@ async def startup(app):
         if lg_name == "root":
             logger.setLevel(lg_level)
         else:
-            module = sys.modules[lg_name]
+            try:
+                module = sys.modules[lg_name]
+            except KeyError:
+                logger.error(f"unknown module {lg_name}")
             module_logger = getattr(module, "logger")
             module_logger.setLevel(lg_level)
 
     i2c.open_bus(config.i2c.bus)
 
-    init_bmp180(config.general.altitude)
+    init_bmp280(config.general.altitude)
     await init_doorbell()
     await init_linky()
     await init_ups()
 
 
 async def cleanup(app):
-    await close_bmp180()
+    await close_bmp280()
     await close_doorbell()
     await close_linky()
 

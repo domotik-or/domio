@@ -29,7 +29,7 @@ port = 1883
 [logger.root]
 level = "DEBUG"
 
-[logger.domotik.bmp180]
+[logger.domotik.bmp280]
 level = "INFO"
 
 [logger.domotik.doorbell]
