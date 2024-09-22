@@ -67,7 +67,7 @@ I2C
 ===== ========= ================
 Carte Composant Adresse (7 bits)
 ===== ========= ================
-PRE   BMP180A   0x77
+PRE   BMP280    0x76
 RTC   DS3231    0x68
 ===== ========= ================
 
@@ -124,15 +124,15 @@ leur affectation.
     7   4    GPIO | GPCLK0 | UART /dev/ttyAMA3 - TX
     8   14   GPIO | UART /dev/ttyAMA0 - TX
     9   \-   GND
-    10  15   GPIO
+    10  15   GPIO | **UART /dev/ttyAMA0 - RX : Linky**
     11  17   GPIO
     12  18   GPIO | PCMCLK
     13  27   GPIO
     14  \-   GND
     15  22   GPIO
-    16  23   **GPIO - out : Carillon**
+    16  23   **GPIO - out : Buzzer**
     17  \-   3.3V
-    18  24   **GPIO - in : Bouton de sonnette**
+    18  24   **GPIO - out : Carillon**
     19  10   GPIO | MOSI
     20  \-   GND
     21  9    GPIO | MISO | UART /dev/ttyAMA4 - RX
@@ -143,9 +143,9 @@ leur affectation.
     26  7    GPIO | CE1
     27  0    GPIO | ID_SD | UART /dev/ttyAMA2 - TX
     28  1    GPIO | ID_SC | UART /dev/ttyAMA2 - RX
-    29  5    GPIO | UART /dev/ttyAMA3 - RX
+    29  5    **GPIO - in : présence 220V** | UART /dev/ttyAMA3 - RX
     30  \-   GND
-    31  6    GPIO
+    31  6    **GPIO - in : Bouton de sonnette**
     32  12   GPIO | PWM0 | UART /dev/ttyAMA5 - TX
     33  13   GPIO | PWM1 | UART /dev/ttyAMA5 - RX
     34  \-   GND
