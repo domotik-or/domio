@@ -4,7 +4,6 @@ import argparse
 import asyncio
 import importlib
 import logging
-import time
 
 import pigpio
 from aiomqtt import Client
@@ -36,26 +35,26 @@ async def init():
 
     _callback = _pi.callback(
         config.doorbell.button_gpio,
-        pigpio.RISING_EDGE,
+        pigpio.EITHER_EDGE,
         __callback
     )
 
     asyncio.create_task(__subscribe())
 
 
-async def __publish():
+async def __publish(state: bool):
+    payload = "pressed" if state else "released"
     async with Client(config.mqtt.host, config.mqtt.port) as client:
-        await client.publish("home/doorbell/timestamp", payload=f"{time.time()}")
+        await client.publish("home/doorbell/button", payload=payload)
 
 
 def __callback(gpio: int, level: int, tick: int):
-    if _task is None:
-        # don't send notification if the bell is ringing
+    if level == 1:
         logger.info("door bell button pressed")
-        _loop.create_task(__publish())
+    _loop.create_task(__publish(level==1))
 
 
-async def __ding_dong():
+async def __ring():
     global _task
 
     try:
@@ -78,13 +77,13 @@ async def __subscribe():
     global _task
 
     async with Client(config.mqtt.host, config.mqtt.port) as client:
-        await client.subscribe("home/doorbell/ring")
+        await client.subscribe("home/doorbell/bell")
         async for message in client.messages:
             if _task is None:
                 logger.info("ring the bell")
                 # the task is run using the loop of the main thread
                 # enabling _task to be tested without using a critical section
-                _task = _loop.create_task(__ding_dong())
+                _task = _loop.create_task(__ring())
 
 
 async def close():
