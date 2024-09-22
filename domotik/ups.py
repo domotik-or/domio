@@ -2,6 +2,8 @@
 
 import argparse
 import asyncio
+from datetime import datetime
+from datetime import timedelta
 import logging
 
 import pigpio
@@ -10,7 +12,8 @@ from aiomqtt import Client
 import domotik.config as config
 
 
-_ac220 = True
+_ac220 = False
+_last_on = datetime.now()
 _pi = None
 _running = True
 _task = None
@@ -34,12 +37,14 @@ async def init():
 
 
 async def _publish(state: bool):
+    payload = "1" if state else "0"
     async with Client(config.mqtt.host, config.mqtt.port) as client:
-        await client.publish("home/ac220/state", payload=state)
+        await client.publish("home/mains/presence", payload=payload)
 
 
 async def _task_ups():
     global _ac220
+    global _last_on
 
     ac220_old = True
 
@@ -58,6 +63,19 @@ async def _task_ups():
                     await _publish(False)
 
             ac220_old = _ac220
+
+            if _ac220:
+                _last_on = datetime.now()
+            else:
+                if datetime.now() - _last_on > timedelta(minutes=5):
+                    # shutdown after 5 minutes after lacking 220 V power
+                    logger.debug("shutdown requested")
+                    await asyncio.create_subprocess_shell(
+                        "sudo shutdown -h now",
+                        shell=True,
+                        stdout=asyncio.subprocess.DEVNULL,
+                        stderr=asyncio.subprocess.DEVNULL
+                    )
 
             await asyncio.sleep(1)
 
