@@ -167,7 +167,8 @@ class Bmp280:
         var1 = p9 * p * p / 2147483648.0
         var2 = p * p8 / 32768.0
         p += (var1 + var2 + p7) / 16.0
-        return p / 100
+        logger.debug(f"Pressure: {p} Pa")
+        return p
 
     async def read_altitude(self, sealevel_pa=101325.0) -> float:
         """Calculates the altitude in meters."""
