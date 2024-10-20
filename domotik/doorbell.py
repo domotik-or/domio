@@ -14,7 +14,8 @@ _callback = None
 _loop = None
 _pi = None
 _running = True
-_task = None
+_task_ring = None
+_task_client = None
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ async def init():
     global _callback
     global _loop
     global _pi
+    global _task_client
 
     if _pi is None:
         _pi = pigpio.pi()
@@ -39,7 +41,7 @@ async def init():
         __callback
     )
 
-    asyncio.create_task(__subscribe())
+    _task_client = asyncio.create_task(__subscribe())
 
 
 async def __publish(state: bool):
@@ -55,7 +57,7 @@ def __callback(gpio: int, level: int, tick: int):
 
 
 async def __ring():
-    global _task
+    global _task_ring
 
     try:
         for s in range(5):
@@ -63,38 +65,51 @@ async def __ring():
             logger.debug("ding")
             await asyncio.sleep(0.8)
 
+            if not _running:
+                return
+
             _pi.write(config.doorbell.bell_gpio, False)
             logger.debug("dong")
             await asyncio.sleep(1.2)
+
             if not _running:
                 return
     finally:
         _pi.write(config.doorbell.bell_gpio, False)
-        _task = None
+        _task_ring = None
 
 
 async def __subscribe():
-    global _task
+    global _task_ring
 
     async with Client(config.mqtt.host, config.mqtt.port) as client:
         await client.subscribe("home/doorbell/bell")
         async for message in client.messages:
-            if _task is None:
+            if _task_ring is None:
                 logger.info("ring the bell")
                 # the task is run using the loop of the main thread
                 # enabling _task to be tested without using a critical section
-                _task = _loop.create_task(__ring())
+                _task_ring = _loop.create_task(__ring())
 
 
 async def close():
     global _callback
     global _pi
     global _running
+    global _task_client
+    global _task_ring
 
     logger.debug("closing")
+
+    if _task_client is not None:
+        _task_client.cancel()
+        await _task_client
+        _task_client = None
+
     _running = False
-    if _task is not None:
-        await _task
+    if _task_ring is not None:
+        await _task_ring
+        _task_ring = None
 
     if _pi is not None:
         if _callback is not None:
