@@ -5,7 +5,7 @@ Procédure d'installation du Raspberry Pi 4 Model B
 +--------------------+----------+----------------------------+
 | Date               | Version  | Auteur                     |
 +--------------------+----------+----------------------------+
-| 15 juin 2024       | 1.0      | Franck Barbenoire          |
+| 2 mars 2025        | 1.0      | Franck Barbenoire          |
 +--------------------+----------+----------------------------+
 
 .. contents:: Table des matières
@@ -125,7 +125,7 @@ leur affectation.
     8   14   GPIO | UART /dev/ttyAMA0 - TX
     9   \-   GND
     10  15   GPIO | **UART /dev/ttyAMA0 - RX : Linky**
-    11  17   GPIO
+    11  17   **GPIO - input : Shutdown**
     12  18   GPIO | PCMCLK
     13  27   GPIO
     14  \-   GND
@@ -178,9 +178,9 @@ autre partition que celle souhaitée avec des conséquences dramatiques...).
 
 .. code:: console
 
-    $ wget https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-03-15/2024-03-15-raspios-bookworm-arm64-lite.img.xz
-    $ unxz 2024-03-15-raspios-bookworm-arm64-lite.img.xz
-    $ sudo dd bs=1M if=2024-03-15-raspios-bookworm-arm64-lite.img of=/dev/sdX
+    $ wget https://downloads.raspberrypi.com/raspios_lite_armhf/images/raspios_lite_armhf-2024-11-19/2024-11-19-raspios-bookworm-armhf-lite.img.xz
+    $ unxz 2024-11-19-raspios-bookworm-armhf-lite.img.xz
+    $ sudo dd bs=1M if=2024-11-19-raspios-bookworm-armhf-lite.img of=/dev/sdX
     $ sudo sync
 
 Activer la sortie vidéo composite
@@ -244,7 +244,7 @@ Connexions de base :
 
 - Un écran sur le port HDMI ou l'entrée vidéo composite ;
 - Un clavier sur un port USB ;
-- Un câble Ethernet entre le RPI une box.
+- Un câble Ethernet entre le RPI et une box.
 
 Introduire la cartes SD dans le RPI et le mettre sous tension. Après la
 séquence de boot, un menu de configuration appararaît :
@@ -298,27 +298,55 @@ Et enfin, on peut se connecter en ssh :
 
    $ ssh domotik@xxx.xxx.xxx.xxx
 
-Fixer les paramètres réseau : adresse ip fixer sur l'interface Ethernet :
+Une fois la connexion réseau établie avec le RPI, on peut désactiver la vidéo
+composite.
+
+Fixer une adresse ip fixe
+-------------------------
+
+Déterminer quel gestionnaire de périphérique réseaux gère linterface. Exemple :
 
 .. code:: console
 
-    $ sudo nmtui
+    $ nmcli device status
+    DEVICE  TYPE      STATE                   CONNECTION
+    eth0    ethernet  connected               Wired connection 1
+    lo      loopback  connected (externally)  lo
+    wlan0   wifi      unavailable             --
 
-Une fois la connexion réseau établie avec le RPI, on peut désactiver la vidéo
-composite.
+    $ networkctl list
+    WARNING: systemd-networkd is not running, output will be incomplete.
+
+    IDX LINK  TYPE     OPERATIONAL SETUP
+      1 lo    loopback -           unmanaged
+      2 eth0  ether    -           unmanaged
+      3 wlan0 wlan     -           unmanaged
+
+    3 links listed.
+
+L'interface `eth0` est gérée par NetworkManager. Assurez vous que l'adresse ip
+fixe choisie n'entrera pas en conflit avec les adresses allouées par le DHCP.
+L'adresse ip est fixée par l'outil en ligne de commande du NetworkManager :
+
+.. code:: console
+
+    sudo nmcli connection modify "Wired connection 1" ipv4.method "manual" \
+    ipv4.addresses "192.168.1.50/24" ipv4.gateway "192.168.1.1" \
+    ipv4.dns "80.10.246.2,80.10.246.129"
 
 Gestion des périphériques intégrés
 ----------------------------------
 
-Pour autoriser le bus I2C, modifier les lignes suivantes du fichier
-`/boot/config.txt` :
+Pour autoriser le bus I2C et SPI, modifier les lignes suivantes du fichier
+`/boot/firmware/config.txt` :
 
 .. code:: console
 
     dtparam=i2c_arm=on
+    dtparam=spi=on
 
 Pour interdire le Bluetooth et le Wifi, ajouter les lignes suivantes à la fin du
-fichier `/boot/config.txt` :
+fichier `/boot/firmware/config.txt` :
 
 .. code:: console
 
@@ -333,10 +361,20 @@ Ajouter les lignes suivantes à la fin du fichier `/etc/modules` :
 
     i2c-dev
 
+Bouton de shutdown
+------------------
+
+Pour disposer d'un bouton de shutdown, ajouter le ligne suivantes à la fin du
+fichier `/boot/firmware/config.txt` :
+
+.. code:: console
+
+    dtoverlay=gpio-shutdown,gpio_pin=17,active_low=1,gpio_pull=up,debounce=200
+
 Installation d'une horloge sauvegardée
 --------------------------------------
 
-Ajouter les lignes suivantes au fichier `/boot/config.txt` :
+Ajouter les lignes suivantes au fichier `/boot/firmware/config.txt` :
 
 .. code:: console
 
@@ -389,8 +427,9 @@ Installation de packages supplémentaires
 
 .. code:: console
 
-    $ sudo install git pigpio i2c-tools picocom
+    $ sudo install vim git pigpio i2c-tools spi-tools picocom
     $ sudo install python3-setuptools python3-pip
+    $ sudo install ufw
 
 Démarrage du daemon `pigpiod` :
 
@@ -398,6 +437,8 @@ Démarrage du daemon `pigpiod` :
 
     $ sudo systemctl start pigpiod
     $ sudo systemctl enable pigpiod
+    $ sudo systemctl start ufw
+    $ sudo systemctl enable ufw
 
 Arrêt de services
 -----------------
@@ -421,13 +462,14 @@ Installer des packages Python supplémentaires :
 
 .. code:: console
 
-    $ pip install --user -r requirements.txt
+    $ cd python3-domotik
+    $ pip install --user --break-system-packages -r requirements.txt
 
 Permettre de lancement de l'application au démarrage du RPI :
 
 .. code:: console
 
-    $ cd ~/domotik
+    $ cd ~/python3-domotik
     $ sudo cp python3-domotik.service /etc/systemd/system
     $ sudo systemctl enable python3-domotik.service
     $ sudo systemctl start python3-domotik.service
@@ -452,15 +494,18 @@ Nodejs
 .. code:: console
 
     $ sudo curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-    $ sudo apt install -y nodejs git make g++ gcc libsystemd-dev make
+    $ sudo apt install -y nodejs git make g++ gcc libsystemd-dev
+    $ npm install -g pnpm
     $ node --version
-    v20.13.1
-    $ npm --version
-    10.5.2
-    $ sudo npm install -g npm@10.8.0
+    v20.18.3
+    $ pnpm --version
+    9.15.4
 
 Zigbee2mqtt
 -----------
+
+Source :
+`Zigbee2mqtt installation on Linux <https://www.zigbee2mqtt.io/guide/installation/01_linux.html>`_.
 
 Installation :
 
@@ -470,23 +515,13 @@ Installation :
     $ sudo chown -R ${USER}: /opt/zigbee2mqtt
     $ git clone --depth 1 https://github.com/Koenkk/zigbee2mqtt.git /opt/zigbee2mqtt
     $ cd /opt/zigbee2mqtt
-    $ npm ci
+    $ pnpm i --frozen-lockfile
 
-    added 796 packages, and audited 797 packages in 5m
+    <needs update>
 
-    86 packages are looking for funding
-      run `npm fund` for details
+    $ pnpm run build
 
-    found 0 vulnerabilities
-    npm notice
-    npm notice New minor version of npm available! 10.5.2 -> 10.7.0
-    npm notice Changelog: https://github.com/npm/cli/releases/tag/v10.7.0
-    npm notice Run npm install -g npm@10.7.0 to update!
-    npm notice
-
-    $ npm run build
-
-    > zigbee2mqtt@1.37.1 build
+    > zigbee2mqtt@2.1.1 build /opt/zigbee2mqtt
     > tsc && node index.js writehash
 
 Configuration :
@@ -544,25 +579,25 @@ Contenu du fichier `zigbee2mqtt.service` :
 
 .. code:: console
 
-	[Unit]
-	Description=zigbee2mqtt
-	After=network.target
+    [Unit]
+    Description=zigbee2mqtt
+    After=network.target
 
-	[Service]
-	Environment=NODE_ENV=production
-	Type=notify
-	ExecStart=/usr/bin/node index.js
-	WorkingDirectory=/opt/zigbee2mqtt
-	StandardOutput=inherit
-	# Or use StandardOutput=null if you don't want Zigbee2MQTT messages filling syslog, for more options see sys
-	StandardError=inherit
-	WatchdogSec=10s
-	Restart=always
-	RestartSec=10s
-	User=domotik
+    [Service]
+    Environment=NODE_ENV=production
+    Type=notify
+    ExecStart=/usr/bin/node index.js
+    WorkingDirectory=/opt/zigbee2mqtt
+    StandardOutput=inherit
+    # Or use StandardOutput=null if you don't want Zigbee2MQTT messages filling syslog, for more options see systemd.exec(5)
+    StandardError=inherit
+    WatchdogSec=10s
+    Restart=always
+    RestartSec=10s
+    User=pi
 
-	[Install]
-	WantedBy=multi-user.target
+    [Install]
+    WantedBy=multi-user.target
 
 .. code:: console
 
