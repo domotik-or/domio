@@ -14,7 +14,7 @@ import domotik.config as config
 import domotik.i2c as i2c
 
 # BMP280 default address.
-BMP280_I2C_ADDR = 0x76
+BMP280_I2C_ADDR = 0x77
 
 # Operating Modes
 SLEEP_MODE = 0

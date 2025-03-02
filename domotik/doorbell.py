@@ -31,6 +31,7 @@ async def init():
 
     _pi.set_mode(config.doorbell.bell_gpio, pigpio.OUTPUT)
     _pi.set_mode(config.doorbell.button_gpio, pigpio.INPUT)
+    _pi.set_pull_up_down(config.doorbell.button_gpio, pigpio.PUD_DOWN)
     _pi.set_glitch_filter(config.doorbell.button_gpio, 500)
 
     _loop = asyncio.get_event_loop()

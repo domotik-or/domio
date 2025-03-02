@@ -442,7 +442,7 @@ Mosquitto
 
 .. code:: console
 
-    $ sudo apt install mosquitto
+    $ sudo apt install mosquitto mosquitto-clients
     $ sudo systemctl enable mosquitto
     $ sudo systemctl start mosquitto
 
@@ -671,3 +671,4 @@ Debug
 .. code:: console
 
     mosquitto_pub -t home/doorbell/timestamp -m "`date +%s`"
+    mosquitto_sub -t home/doorbell/button
