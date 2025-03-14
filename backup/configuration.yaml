@@ -1,0 +1,78 @@
+
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+sensor:
+  - platform: rest
+    resource: http://localhost:8100/pressure
+    name: "Capteur barométrique"
+    value_template: "{{ value_json.data.pressure | multiply(0.01) | round(0) }}"
+    unique_id: "pression-atmospherique"
+    unit_of_measurement: hPa
+    scan_interval: 300
+    device_class: atmospheric_pressure
+
+rest:
+  - resource: http://192.168.1.50:8100/linky
+    scan_interval: 60
+    sensor:
+      - name: "Linky consommation"
+        value_template: "{{ value_json.data.east }}"
+        unique_id: "linky-consomation"
+        unit_of_measurement: Wh
+        device_class: energy
+        state_class: total
+        json_attributes_path: "$.data"
+        json_attributes:
+          - "easf01"
+          - "easf02"
+      - name: "Linky puissance"
+        value_template: "{{ value_json.data.sinsts }}"
+        unique_id: "linky-puissance"
+        unit_of_measurement: VA
+        device_class: apparent_power
+        json_attributes_path: "$.data"
+        json_attributes:
+          - "smaxsn"
+          - "smaxsn_1"
+
+mqtt:
+  binary_sensor:
+    - name: "Bouton de sonnette"
+      state_topic: "home/doorbell/button"
+      payload_on: "pressed"
+      payload_off: "released"
+      unique_id: "doorbell-button"
+    - name: "Présence secteur"
+      state_topic: "home/mains/presence"
+      device_class: "power"
+      payload_on: "1"
+      payload_off: "0"
+      unique_id: "mains-state"
+
+notify:
+  - name: email
+    platform: smtp
+    port: 25
+    encryption: starttls
+    server: smtp.orange.fr
+    username: barbenoire.franck@orange.fr
+    sender: barbenoire.franck@orange.fr
+    password: !secret smtp_password
+    timeout: 15
+    sender_name: Home assistant
+    recipient:
+      - fbarbenoire@gmail.com
+
+recorder:
+    auto_purge: true
+    auto_repack: true
+    purge_keep_days: 5
