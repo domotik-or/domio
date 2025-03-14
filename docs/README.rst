@@ -594,7 +594,7 @@ Contenu du fichier `zigbee2mqtt.service` :
     WatchdogSec=10s
     Restart=always
     RestartSec=10s
-    User=pi
+    User=domotik
 
     [Install]
     WantedBy=multi-user.target
@@ -620,8 +620,8 @@ Home Assistant
 Installer Python 3.12
 ---------------------
 
-Suivre les instructions du site
-`https://community.home-assistant.io/t/python-3-12-backport-for-debian-12-bookworm/709459` :
+Suivre les `instructions du site
+<https://community.home-assistant.io/t/python-3-12-backport-for-debian-12-bookworm/709459>`_.
 
 .. code:: console
 
@@ -638,11 +638,19 @@ Suivre les instructions du site
     $ sudo apt update
     $ sudo apt install python3.12 python3.12-venv python3.12-dev
 
+Installer Python 3.13
+---------------------
+
+Peut-être un jour...
+
+Suivre les `instructions du site
+<https://community.home-assistant.io/t/python-3.13-backport-for-debian-12-bookworm/842333>`_:
+
 Installer Home Assistant
 ------------------------
 
 Suivre les instructions du site
-`https://www.home-assistant.io/installation/linux` :
+`https://www.home-assistant.io/installation/linux#install-home-assistant-core`_:
 
 .. code:: console
 
@@ -658,6 +666,20 @@ Suivre les instructions du site
     $ python3.12 -m venv .
     $ source bin/activate
     $ python3.12 -m pip install wheel
+
+Installer Rust
+--------------
+
+.. code:: console
+
+    $ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    $ source ~/.cargo/env
+
+Installer Home Assistant (fin)
+------------------------------
+
+.. code:: console
+
     $ pip3.12 install homeassistant==2024.5.4
 
 Lancement

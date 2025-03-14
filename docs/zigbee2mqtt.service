@@ -13,7 +13,7 @@ StandardError=inherit
 WatchdogSec=10s
 Restart=always
 RestartSec=10s
-User=pi
+User=domotik
 
 [Install]
 WantedBy=multi-user.target
