@@ -617,7 +617,7 @@ Mettre à jour Zigbee2mqtt
 Home Assistant
 ==============
 
-Installer Python 3.13
+Installer Python 3.12
 ---------------------
 
 Suivre les `instructions du site
@@ -630,21 +630,18 @@ Suivre les `instructions du site
     $ wget -qO- https://pascalroeleven.nl/deb-pascalroeleven.gpg | sudo tee /etc/apt/keyrings/deb-pascalroeleven.gpg
     $ cat <<EOF | sudo tee /etc/apt/sources.list.d/pascalroeleven.sources
     Types: deb
-    URIs: http://deb.pascalroeleven.nl/python3.13
+    URIs: http://deb.pascalroeleven.nl/python3.12
     Suites: bookworm-backports
     Components: main
     Signed-By: /etc/apt/keyrings/deb-pascalroeleven.gpg
     EOF
     $ sudo apt update
-    $ sudo apt install python3.13 python3.13-venv python3.13-dev
+    $ sudo apt install python3.12 python3.12-venv python3.12-dev
 
 Installer Python 3.13
 ---------------------
 
 Peut-être un jour...
-
-Suivre les `instructions du site
-<https://community.home-assistant.io/t/python-3.13-backport-for-debian-12-bookworm/842333>`_:
 
 Installer Home Assistant
 ------------------------
