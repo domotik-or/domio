@@ -10,8 +10,16 @@ setup(
 	author="Franck Barbenoire",
 	author_email="fbarbenoire@gmail.com",
 	url="https://github.com/franckinux/python3-domotik",
-	packages=find_packages(),
+	packages=["domotik"],
+    package_dir={"domotik": "domotik"},
 	include_package_data=True,
+    install_requires=[
+        "aiohttp", "aiomqtt", "pyserial-asyncio", "tomli"
+    ],
+    entry_points={
+        "console_scripts": ["domotik=domotik.main:main", ]
+    },
+    python_requires='>=3.10',
 	zip_safe=False,
 	license="MIT"
 )

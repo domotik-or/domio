@@ -59,4 +59,3 @@ def read(config_filename: str):
 
     global ups
     ups = UpsConfig(**raw_config["ups"])
-

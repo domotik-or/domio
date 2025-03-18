@@ -26,9 +26,6 @@ port = 1883
 
 [[logger]]
 
-[logger.root]
-level = "DEBUG"
-
 [logger.domotik.bmp280]
 level = "INFO"
 
