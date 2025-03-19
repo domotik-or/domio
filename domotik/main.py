@@ -2,6 +2,7 @@
 
 import argparse
 import asyncio
+import importlib
 import logging
 import sys
 
@@ -21,7 +22,6 @@ from domotik.linky import close as close_linky
 from domotik.linky import get_data as get_linky_data
 from domotik.linky import init as init_linky
 from domotik.ups import init as init_ups
-from utils import get_project_root
 
 logger = logging.getLogger()
 handler = logging.StreamHandler(stream=sys.stdout)
@@ -54,17 +54,19 @@ async def temperature_handler(request):
 async def startup(app):
     logging.getLogger("aiohttp").setLevel(logging.WARNING)
 
-    # set log level of modules' loggers
-    for lg_name, lg_level in config.loggers.items():
-        if lg_name == "root":
-            logger.setLevel(lg_level)
-        else:
+    # set log level of modules logger
+    for lg_name, lg_config in config.loggers.items():
+        module_name = f"sail.{lg_name}"
+        try:
+            module = sys.modules[module_name]
+        except KeyError:
             try:
-                module = sys.modules[lg_name]
-            except KeyError:
-                logger.error(f"unknown module {lg_name}")
-            module_logger = getattr(module, "logger")
-            module_logger.setLevel(lg_level)
+                module = importlib.import_module(module_name)
+            except ModuleNotFoundError:
+                logger.warning(f"module {module_name} not found")
+                continue
+        module_logger = getattr(module, "logger")
+        module_logger.setLevel(lg_config.level)
 
     i2c.open_bus(config.i2c.bus)
 
