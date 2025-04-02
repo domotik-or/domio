@@ -8,21 +8,6 @@ import sys
 from aiohttp import web
 # import aiohttp_cors
 
-<<<<<<< HEAD:domotik/main.py
-from domotik.bmp280 import init as init_bmp280
-from domotik.bmp280 import close as close_bmp280
-from domotik.bmp280 import get_pressure as get_pressure_data
-from domotik.bmp280 import get_sea_level_pressure as get_sea_level_pressure_data
-from domotik.bmp280 import get_temperature as get_temperature_data
-import domotik.config as config
-from domotik.doorbell import close as close_doorbell
-from domotik.doorbell import init as init_doorbell
-import domotik.i2c as i2c
-from domotik.linky import close as close_linky
-from domotik.linky import get_data as get_linky_data
-from domotik.linky import init as init_linky
-from domotik.ups import init as init_ups
-=======
 import src.config as config
 from src.bmp280 import init as init_bmp280
 from src.bmp280 import close as close_bmp280
@@ -37,7 +22,6 @@ from src.linky import get_data as get_linky_data
 from src.linky import init as init_linky
 from src.ups import init as init_ups
 from utils import get_project_root
->>>>>>> 7ee7dfe (better styling):src/main.py
 
 logger = logging.getLogger()
 handler = logging.StreamHandler(stream=sys.stdout)
