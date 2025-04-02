@@ -3,13 +3,13 @@ from pathlib import Path
 
 import tomli
 
-from src.typem import DoorbellConfig
-from src.typem import GeneralConfig
-from src.typem import I2cConfig
-from src.typem import LinkyConfig
-from src.typem import LoggerConfig
-from src.typem import MqttConfig
-from src.typem import UpsConfig
+from typem import DoorbellConfig
+from typem import GeneralConfig
+from typem import I2cConfig
+from typem import LinkyConfig
+from typem import LoggerConfig
+from typem import MqttConfig
+from typem import UpsConfig
 
 doorbell = None
 general = None

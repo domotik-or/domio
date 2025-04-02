@@ -8,7 +8,7 @@ import logging
 import pigpio
 from aiomqtt import Client
 
-import src.config as config
+import config
 
 
 _ac220 = False

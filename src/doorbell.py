@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
 import asyncio
-import importlib
 import logging
 
 import pigpio
 from aiomqtt import Client
 
-import src.config as config
+import config
 
 _callback = None
 _loop = None

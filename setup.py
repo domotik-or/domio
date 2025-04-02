@@ -11,7 +11,7 @@ setup(
     author_email="fbarbenoire@gmail.com",
     url="https://github.com/franckinux/python3-domotik",
     packages=["domotik"],
-    package_dir={"domotik": "domotik"},
+    package_dir={"domotik": "src"},
     include_package_data=True,
     install_requires=[
         "aiohttp", "aiomqtt", "pyserial-asyncio", "tomli"

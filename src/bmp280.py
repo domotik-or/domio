@@ -9,8 +9,8 @@ import logging
 
 from smbus2 import SMBus
 
-import src.config as config
-import src.i2c as i2c
+import config
+import i2c
 
 # BMP280 default address.
 BMP280_I2C_ADDR = 0x77

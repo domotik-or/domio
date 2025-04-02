@@ -6,7 +6,7 @@ import logging
 import serial
 import serial_asyncio
 
-import src.config as config
+import config
 
 
 _reader = None

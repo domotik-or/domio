@@ -8,20 +8,19 @@ import sys
 from aiohttp import web
 # import aiohttp_cors
 
-import src.config as config
-from src.bmp280 import init as init_bmp280
-from src.bmp280 import close as close_bmp280
-from src.bmp280 import get_pressure as get_pressure_data
-from src.bmp280 import get_sea_level_pressure as get_sea_level_pressure_data
-from src.bmp280 import get_temperature as get_temperature_data
-from src.doorbell import close as close_doorbell
-from src.doorbell import init as init_doorbell
-import src.i2c as i2c
-from src.linky import close as close_linky
-from src.linky import get_data as get_linky_data
-from src.linky import init as init_linky
-from src.ups import init as init_ups
-from utils import get_project_root
+import config
+from bmp280 import init as init_bmp280
+from bmp280 import close as close_bmp280
+from bmp280 import get_pressure as get_pressure_data
+from bmp280 import get_sea_level_pressure as get_sea_level_pressure_data
+from bmp280 import get_temperature as get_temperature_data
+from doorbell import close as close_doorbell
+from doorbell import init as init_doorbell
+import i2c
+from linky import close as close_linky
+from linky import get_data as get_linky_data
+from linky import init as init_linky
+from ups import init as init_ups
 
 logger = logging.getLogger()
 handler = logging.StreamHandler(stream=sys.stdout)
@@ -56,14 +55,13 @@ async def startup(app):
 
     # set log level of modules logger
     for lg_name, lg_config in config.loggers.items():
-        module_name = f"src.{lg_name}"
         try:
-            module = sys.modules[module_name]
+            module = sys.modules[lg_name]
         except KeyError:
             try:
-                module = importlib.import_module(module_name)
+                module = importlib.import_module(lg_name)
             except ModuleNotFoundError:
-                logger.warning(f"module {module_name} not found")
+                logger.warning(f"module {lg_name} not found")
                 continue
         module_logger = getattr(module, "logger")
         module_logger.setLevel(lg_config.level)
