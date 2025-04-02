@@ -7,7 +7,7 @@ After=pigpiod.service
 [Service]
 WorkingDirectory=/home/domotik/python3-domotik
 Environment="PYTHONPATH=/home/domotik/python3-domotik"
-ExecStart=/usr/bin/python3 /home/domotik/python3-domotik/domotik/main.py
+ExecStart=/usr/bin/python3 /home/domotik/python3-domotik/src/main.py
 User=domotik
 Group=domotik
 Restart=on-failure
