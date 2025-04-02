@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import argparse
 import asyncio
 import importlib
 import logging
@@ -8,7 +7,7 @@ import logging
 import pigpio
 from aiomqtt import Client
 
-import domotik.config as config
+import src.config as config
 
 _callback = None
 _loop = None
@@ -137,6 +136,7 @@ async def run(config_filename: str):
 
 # main is used for test purpose as standalone
 if __name__ == "__main__":
+    import argparse
     import sys
 
     handler = logging.StreamHandler(stream=sys.stdout)

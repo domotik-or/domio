@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
-import argparse
 import asyncio
 import logging
 
 import serial
 import serial_asyncio
 
-import domotik.config as config
+import src.config as config
 
 
 _reader = None
@@ -125,6 +124,7 @@ async def run(config_filename: str):
     await close()
 
 if __name__ == "__main__":
+    import argparse
     import sys
 
     handler = logging.StreamHandler(stream=sys.stdout)

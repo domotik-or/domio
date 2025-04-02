@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import argparse
 import asyncio
 import importlib
 import logging
@@ -9,6 +8,7 @@ import sys
 from aiohttp import web
 # import aiohttp_cors
 
+<<<<<<< HEAD:domotik/main.py
 from domotik.bmp280 import init as init_bmp280
 from domotik.bmp280 import close as close_bmp280
 from domotik.bmp280 import get_pressure as get_pressure_data
@@ -22,13 +22,29 @@ from domotik.linky import close as close_linky
 from domotik.linky import get_data as get_linky_data
 from domotik.linky import init as init_linky
 from domotik.ups import init as init_ups
+=======
+import src.config as config
+from src.bmp280 import init as init_bmp280
+from src.bmp280 import close as close_bmp280
+from src.bmp280 import get_pressure as get_pressure_data
+from src.bmp280 import get_sea_level_pressure as get_sea_level_pressure_data
+from src.bmp280 import get_temperature as get_temperature_data
+from src.doorbell import close as close_doorbell
+from src.doorbell import init as init_doorbell
+import src.i2c as i2c
+from src.linky import close as close_linky
+from src.linky import get_data as get_linky_data
+from src.linky import init as init_linky
+from src.ups import init as init_ups
+from utils import get_project_root
+>>>>>>> 7ee7dfe (better styling):src/main.py
 
 logger = logging.getLogger()
 handler = logging.StreamHandler(stream=sys.stdout)
 formatter = logging.Formatter("%(asctime)s %(module)s %(levelname)s %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 
 async def linky_handler(request):
@@ -56,7 +72,7 @@ async def startup(app):
 
     # set log level of modules logger
     for lg_name, lg_config in config.loggers.items():
-        module_name = f"sail.{lg_name}"
+        module_name = f"src.{lg_name}"
         try:
             module = sys.modules[module_name]
         except KeyError:
@@ -127,6 +143,8 @@ async def run(config_filename: str):
 
 
 def main():
+    import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", default="config.toml")
     args = parser.parse_args()

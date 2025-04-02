@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import argparse
 import asyncio
 from datetime import datetime
 from datetime import timedelta
@@ -9,7 +8,7 @@ import logging
 import pigpio
 from aiomqtt import Client
 
-import domotik.config as config
+import src.config as config
 
 
 _ac220 = False
@@ -111,6 +110,7 @@ async def run(config_filename: str):
 
 
 if __name__ == "__main__":
+    import argparse
     import sys
 
     handler = logging.StreamHandler(stream=sys.stdout)

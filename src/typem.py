@@ -31,6 +31,11 @@ class LinkyConfig:
 
 
 @dataclass
+class LoggerConfig:
+    level: int
+
+
+@dataclass
 class MqttConfig:
     host: str
     port: int

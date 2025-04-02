@@ -24,16 +24,16 @@ buzzer_gpio = 23
 host = "localhost"
 port = 1883
 
-[[logger]]
+[logger]
 
-[logger.domotik.bmp280]
+[logger.bmp280]
 level = "INFO"
 
-[logger.domotik.doorbell]
+[logger.doorbell]
 level = "INFO"
 
-[logger.domotik.linky]
+[logger.linky]
 level = "INFO"
 
-[logger.domotik.ups]
+[logger.ups]
 level = "INFO"

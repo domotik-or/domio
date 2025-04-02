@@ -22,14 +22,13 @@
 # This copy is different from the original : Modified by Franck Barbenoire
 # (fbarbenoire@gmail.com)
 
-import argparse
 import asyncio
 import logging
 
 from smbus2 import SMBus
 
-import domotik.config as config
-import domotik.i2c as i2c
+import src.config as config
+import src.i2c as i2c
 
 # BMP180 default address.
 BMP180_I2C_ADDR = 0x77
@@ -334,6 +333,7 @@ async def run(config_filename: str):
 
 # main is used for test purpose as standalone
 if __name__ == "__main__":
+    import argparse
     import sys
 
     handler = logging.StreamHandler(stream=sys.stdout)
