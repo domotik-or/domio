@@ -25,15 +25,7 @@ host = "localhost"
 port = 1883
 
 [logger]
-
-[logger.bmp280]
-level = "INFO"
-
-[logger.doorbell]
-level = "INFO"
-
-[logger.linky]
-level = "INFO"
-
-[logger.ups]
-level = "INFO"
+bmp280 = "INFO"
+doorbell = "INFO"
+linky = "INFO"
+ups = "INFO"
