@@ -118,32 +118,31 @@ async def run(config_filename: str):
 
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", config.linky.server_port)
+    site = web.TCPSite(runner, "0.0.0.0", config.network.server_port)
     await site.start()
     while True:
         await asyncio.sleep(1)
 
 
-def main():
+async def close():
+    pass
+
+
+if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", default="config.toml")
     args = parser.parse_args()
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     try:
         logger.info("server started")
         loop.run_until_complete(run(args.config))
     except KeyboardInterrupt:
         pass
     finally:
-        # TODO: future use
-        # loop.run_until_complete(close())
+        loop.run_until_complete(close())
         loop.stop()
         logger.info("server stopped")
-    pass
-
-
-if __name__ == "__main__":
-    main()

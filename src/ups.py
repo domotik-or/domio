@@ -37,7 +37,7 @@ async def init():
 
 async def _publish(state: bool):
     payload = "1" if state else "0"
-    async with Client(config.mqtt.host, config.mqtt.port) as client:
+    async with Client(config.mqtt.hostname, config.mqtt.port) as client:
         await client.publish("home/mains/presence", payload=payload)
 
 
@@ -103,10 +103,8 @@ async def run(config_filename: str):
 
     for _ in range(50):
         data = get_220v_status()
-        print(data)
+        logger.debug(data)
         await asyncio.sleep(1)
-
-    await close()
 
 
 if __name__ == "__main__":
@@ -123,9 +121,15 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--config", default="config.toml")
     args = parser.parse_args()
 
+    logger.info("application stopped")
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     try:
-        asyncio.run(run(args.config))
+        loop.run_until_complete(run(args.config))
     except KeyboardInterrupt:
         pass
-
-    logger.info("application stopped")
+    finally:
+        loop.run_until_complete(close())
+        loop.stop()
+        logger.info("done")

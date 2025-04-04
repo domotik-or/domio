@@ -22,7 +22,6 @@ class I2cConfig:
 
 @dataclass
 class LinkyConfig:
-    server_port: int
     serial_port: int
     baudrate: int
     bytesize: str
@@ -37,8 +36,13 @@ class LoggerConfig:
 
 @dataclass
 class MqttConfig:
-    host: str
+    hostname: str
     port: int
+
+
+@dataclass
+class NetworkConfig:
+    server_port: int
 
 
 @dataclass

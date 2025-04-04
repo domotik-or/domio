@@ -19,7 +19,7 @@ setup(
     entry_points={
         "console_scripts": ["domotik=domotik.main:main", ]
     },
-    python_requires='>=3.10',
+    python_requires='>=3.11',
     zip_safe=False,
     license="MIT"
 )

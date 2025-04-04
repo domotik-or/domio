@@ -15,7 +15,9 @@ _running = True
 _task_ring = None
 _task_client = None
 
+# logger initial setup
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 async def init():
@@ -45,7 +47,7 @@ async def init():
 
 async def __publish(state: bool):
     payload = "pressed" if state else "released"
-    async with Client(config.mqtt.host, config.mqtt.port) as client:
+    async with Client(config.mqtt.hostname, config.mqtt.port) as client:
         await client.publish("home/doorbell/button", payload=payload)
 
 
@@ -81,7 +83,7 @@ async def __ring():
 async def __subscribe():
     global _task_ring
 
-    async with Client(config.mqtt.host, config.mqtt.port) as client:
+    async with Client(config.mqtt.hostname, config.mqtt.port) as client:
         await client.subscribe("home/doorbell/bell")
         async for message in client.messages:
             if _task_ring is None:
@@ -130,8 +132,6 @@ async def run(config_filename: str):
 
     await asyncio.sleep(20)
 
-    await close()
-
 
 # main is used for test purpose as standalone
 if __name__ == "__main__":
@@ -148,9 +148,13 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--config", default="config.toml")
     args = parser.parse_args()
 
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     try:
-        asyncio.run(run(args.config))
+        loop.run_until_complete(run(args.config))
     except KeyboardInterrupt:
         pass
-
-    logger.info("application stopped")
+    finally:
+        loop.run_until_complete(close())
+        loop.stop()
+        logger.info("done")

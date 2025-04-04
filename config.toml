@@ -8,8 +8,10 @@ bus = 1
 bell_gpio = 24
 button_gpio = 6
 
-[linky]
+[network]
 server_port = 8100
+
+[linky]
 serial_port = "/dev/ttyAMA0"
 baudrate = 9600
 bytesize = "SEVENBITS"
@@ -21,7 +23,7 @@ ac220_gpio = 5
 buzzer_gpio = 23
 
 [mqtt]
-host = "localhost"
+hostname = "localhost"
 port = 1883
 
 [logger]

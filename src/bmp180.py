@@ -326,9 +326,7 @@ async def run(config_filename: str):
     pressure = await _bmp180.read_pressure()
     temperature = await _bmp180.read_temperature()
 
-    print(f"temperature: {temperature}°C, pressure: {pressure} Pa")
-
-    await close()
+    logger.debug(f"temperature: {temperature}°C, pressure: {pressure} Pa")
 
 
 # main is used for test purpose as standalone
@@ -346,9 +344,13 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--config", default="config.toml")
     args = parser.parse_args()
 
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     try:
-        asyncio.run(run(args.config))
+        loop.run_until_complete(run(args.config))
     except KeyboardInterrupt:
         pass
-
-    logger.info("application stopped")
+    finally:
+        loop.run_until_complete(close())
+        loop.stop()
+        logger.info("done")
