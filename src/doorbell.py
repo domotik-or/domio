@@ -11,6 +11,7 @@ import config
 _callback = None
 _loop = None
 _pi = None
+
 _running = True
 _task_ring = None
 _task_client = None
@@ -45,16 +46,15 @@ async def init():
     _task_client = asyncio.create_task(__subscribe())
 
 
-async def __publish(state: bool):
-    payload = "pressed" if state else "released"
+async def __publish():
     async with Client(config.mqtt.hostname, config.mqtt.port) as client:
-        await client.publish("home/doorbell/button", payload=payload)
+        await client.publish("home/doorbell/pressed")
 
 
 def __callback(gpio: int, level: int, tick: int):
     if level == 1:
         logger.info("door bell button pressed")
-    _loop.create_task(__publish(level==1))
+        _loop.create_task(__publish())
 
 
 async def __ring():
@@ -64,7 +64,7 @@ async def __ring():
         for s in range(5):
             _pi.write(config.doorbell.bell_gpio, True)
             logger.debug("ding")
-            await asyncio.sleep(0.8)
+            await asyncio.sleep(0.4)
 
             if not _running:
                 return
@@ -84,13 +84,16 @@ async def __subscribe():
     global _task_ring
 
     async with Client(config.mqtt.hostname, config.mqtt.port) as client:
-        await client.subscribe("home/doorbell/bell")
-        async for message in client.messages:
-            if _task_ring is None:
-                logger.info("ring the bell")
-                # the task is run using the loop of the main thread
-                # enabling _task to be tested without using a critical section
-                _task_ring = _loop.create_task(__ring())
+        await client.subscribe("home/doorbell/ring")
+        try:
+            async for message in client.messages:
+                if _task_ring is None:
+                    logger.info("ring the bell")
+                    # the task is run using the loop of the main thread enabling
+                    # _task to be tested without using a critical section
+                    _task_ring = _loop.create_task(__ring())
+        except (asyncio.CancelledError, KeyboardInterrupt):
+            pass
 
 
 async def close():
@@ -103,8 +106,11 @@ async def close():
     logger.debug("closing")
 
     if _task_client is not None:
-        _task_client.cancel()
-        await _task_client
+        try:
+            _task_client.cancel()
+            await _task_client
+        except asyncio.CancelledError:
+            pass
         _task_client = None
 
     _running = False
