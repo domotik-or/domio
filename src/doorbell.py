@@ -5,6 +5,7 @@ import logging
 
 import pigpio
 from aiomqtt import Client
+from paho.mqtt.subscribeoptions import SubscribeOptions
 
 import config
 
@@ -47,7 +48,10 @@ async def init():
 
 
 async def __publish():
-    async with Client(config.mqtt.hostname, config.mqtt.port) as client:
+    options = SubscribeOptions(qos=1, noLocal=True)
+    async with Client(
+        config.mqtt.hostname, config.mqtt.port, options=options
+    ) as client:
         await client.publish("home/doorbell/pressed")
 
 
