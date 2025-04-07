@@ -27,6 +27,7 @@ hostname = "localhost"
 port = 1883
 
 [logger]
+aiohttp = "WARNING"
 bmp280 = "INFO"
 doorbell = "INFO"
 linky = "INFO"
