@@ -48,10 +48,7 @@ async def init():
 
 
 async def __publish():
-    options = SubscribeOptions(qos=1, noLocal=True)
-    async with Client(
-        config.mqtt.hostname, config.mqtt.port, options=options
-    ) as client:
+    async with Client(config.mqtt.hostname, config.mqtt.port) as client:
         await client.publish("home/doorbell/pressed")
 
 
