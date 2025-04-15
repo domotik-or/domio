@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import asyncio
 import importlib
 import logging
@@ -125,8 +126,6 @@ async def close():
 
 
 if __name__ == "__main__":
-    import argparse
-
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", default="config.toml")
     args = parser.parse_args()
