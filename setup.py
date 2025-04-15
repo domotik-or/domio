@@ -4,20 +4,20 @@ from setuptools import setup
 
 
 setup(
-    name="python3-domotik",
+    name="domotik",
     version="0.1.0",
     description="Read Linky serial data and more",
     author="Franck Barbenoire",
     author_email="fbarbenoire@gmail.com",
-    url="https://github.com/franckinux/python3-domotik",
+    url="https://github.com/domotik-or/domotik",
     packages=["domotik"],
     package_dir={"domotik": "src"},
     include_package_data=True,
     install_requires=[
-        "aiohttp", "aiomqtt", "pyserial-asyncio", "tomli"
+        "aiohttp", "aiomqtt", "pyserial-asyncio"
     ],
     entry_points={
-        "console_scripts": ["domotik=domotik.main:main", ]
+        "console_scripts": ["domotik=src.main:main", ]
     },
     python_requires='>=3.11',
     zip_safe=False,
