@@ -82,6 +82,7 @@ _running = True
 _task = None
 _temperature = 0.0
 
+# logger initial setup
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 

@@ -17,6 +17,7 @@ _pi = None
 _running = True
 _task = None
 
+# logger initial setup
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
