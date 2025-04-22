@@ -19,8 +19,6 @@ mqtt = None
 network = None
 ups = None
 
-_module = []
-
 
 def read(config_filename: str):
     config_file = Path(config_filename).expanduser()
