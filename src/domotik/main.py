@@ -7,19 +7,19 @@ import sys
 from aiohttp import web
 # import aiohttp_cors
 
-import config
-from bmp280 import init as init_bmp280
-from bmp280 import close as close_bmp280
-from bmp280 import get_pressure as get_pressure_data
-from bmp280 import get_sea_level_pressure as get_sea_level_pressure_data
-from bmp280 import get_temperature as get_temperature_data
-from doorbell import close as close_doorbell
-from doorbell import init as init_doorbell
-import i2c
-from linky import close as close_linky
-from linky import get_data as get_linky_data
-from linky import init as init_linky
-from ups import init as init_ups
+import domotik.config as config
+from domotik.bmp280 import init as init_bmp280
+from domotik.bmp280 import close as close_bmp280
+from domotik.bmp280 import get_pressure as get_pressure_data
+from domotik.bmp280 import get_sea_level_pressure as get_sea_level_pressure_data
+from domotik.bmp280 import get_temperature as get_temperature_data
+from domotik.doorbell import close as close_doorbell
+from domotik.doorbell import init as init_doorbell
+import domotik.i2c as i2c
+from domotik.linky import close as close_linky
+from domotik.linky import get_data as get_linky_data
+from domotik.linky import init as init_linky
+from domotik.ups import init as init_ups
 
 __version__ = "1.0.0"
 
@@ -66,7 +66,7 @@ def _set_loggers_level(config_loggers: dict, module_path: list):
                 continue
 
             level = getattr(logging, lg_config)
-            if lg_name in logging.Logger.manager.loggerDict.keys():
+            if this_module_path in logging.Logger.manager.loggerDict.keys():
                 logging.getLogger(lg_name).setLevel(level)
         else:
             raise Exception("incorrect type")

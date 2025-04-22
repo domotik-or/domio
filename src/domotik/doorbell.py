@@ -19,7 +19,7 @@ _task_client = None
 
 # logger initial setup
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 async def init():

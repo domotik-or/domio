@@ -83,6 +83,7 @@ _task = None
 _temperature = 0.0
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 def twos_complement(input):

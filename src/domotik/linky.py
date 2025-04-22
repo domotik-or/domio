@@ -22,6 +22,7 @@ _smaxsn = 0
 _smaxsn_1 = 0
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 async def init():

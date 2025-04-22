@@ -18,6 +18,7 @@ _running = True
 _task = None
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 async def init():
