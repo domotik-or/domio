@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import argparse
 import asyncio
 import importlib
@@ -22,6 +20,8 @@ from linky import close as close_linky
 from linky import get_data as get_linky_data
 from linky import init as init_linky
 from ups import init as init_ups
+
+__version__ = "1.0.0"
 
 logger = logging.getLogger()
 handler = logging.StreamHandler(stream=sys.stdout)
@@ -51,17 +51,29 @@ async def temperature_handler(request):
     return web.json_response({"data": {"temperature": value}})
 
 
-async def startup(app):
+def _set_loggers_level(config_loggers: dict, module_path: list):
     # set log level of modules logger
-    for lg_name, lg_config in config.loggers.items():
-        try:
-            importlib.import_module(lg_name)
-        except ModuleNotFoundError:
-            logger.warning(f"module {lg_name} not found")
-            continue
+    for lg_name, lg_config in config_loggers.items():
+        if isinstance(lg_config, dict):
+            module_path.append(lg_name)
+            _set_loggers_level(lg_config, module_path)
+        elif isinstance(lg_config, str):
+            this_module_path = '.'.join(module_path + [lg_name])
+            try:
+                importlib.import_module(this_module_path)
+            except ModuleNotFoundError:
+                logger.warning(f"module {this_module_path} not found")
+                continue
 
-        if lg_name in logging.Logger.manager.loggerDict.keys():
-            logging.getLogger(lg_name).setLevel(lg_config.level)
+            level = getattr(logging, lg_config)
+            if lg_name in logging.Logger.manager.loggerDict.keys():
+                logging.getLogger(lg_name).setLevel(level)
+        else:
+            raise Exception("incorrect type")
+
+
+async def startup(app):
+    _set_loggers_level(config.loggers, [])
 
     i2c.open_bus(config.i2c.bus)
 
@@ -125,7 +137,7 @@ async def close():
     pass
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", default="config.toml")
     args = parser.parse_args()

@@ -2,14 +2,13 @@ import logging
 from pathlib import Path
 import tomllib
 
-from typem import DoorbellConfig
-from typem import GeneralConfig
-from typem import I2cConfig
-from typem import LinkyConfig
-from typem import LoggerConfig
-from typem import MqttConfig
-from typem import NetworkConfig
-from typem import UpsConfig
+from domotik.typem import DoorbellConfig
+from domotik.typem import GeneralConfig
+from domotik.typem import I2cConfig
+from domotik.typem import LinkyConfig
+from domotik.typem import MqttConfig
+from domotik.typem import NetworkConfig
+from domotik.typem import UpsConfig
 
 doorbell = None
 general = None
@@ -24,7 +23,8 @@ _module = []
 
 
 def read(config_filename: str):
-    config_file = Path(config_filename)
+    config_file = Path(config_filename).expanduser()
+
     with open(config_file, "rb") as f:
         raw_config = tomllib.load(f)
 
@@ -41,10 +41,7 @@ def read(config_filename: str):
     linky = LinkyConfig(**raw_config["linky"])
 
     global loggers
-    for lg in raw_config["logger"]:
-        level_str = raw_config["logger"][lg]
-        level = getattr(logging, level_str)
-        loggers[lg] = LoggerConfig(level)
+    loggers = raw_config["logger"]
 
     global mqtt
     mqtt = MqttConfig(**raw_config["mqtt"])

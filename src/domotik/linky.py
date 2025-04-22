@@ -6,7 +6,7 @@ import logging
 import serial
 import serial_asyncio
 
-import config
+import domotik.config as config
 
 
 _reader = None

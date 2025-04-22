@@ -1,0 +1,36 @@
+[project]
+name = "domotik"
+dynamic = ["version"]
+description = "Read Linky serial data and more."
+authors = [{ name = "Franck Barbenoire", email = "fbarbenoire@gmail.com" }]
+readme = "README.rst"
+requires-python = ">=3.11"
+dependencies = [
+    "aiohttp==3.11.16",
+    "aiomqtt==2.3.1",
+    "pyserial-asyncio==0.6"
+]
+license = "GPL-3.0-or-later"
+keywords = ["home automation", "domotik"]
+
+[project.urls]
+Homepage = "https://github.com/domotik-or/domotik"
+
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+domotik = "domotik.main:main"
+
+[tool.mypy]
+python_version = 3.11
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "domotik.main.__version__"}

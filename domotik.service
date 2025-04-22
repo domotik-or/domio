@@ -5,9 +5,9 @@ StartLimitBurst=5
 After=pigpiod.service
 
 [Service]
-WorkingDirectory=/home/domotik/domotik
-Environment="PYTHONPATH=/home/domotik/domotik"
-ExecStart=/usr/bin/python3 /home/domotik/domotik/src/main.py
+WorkingDirectory=/home/domotik
+# Environment=""
+ExecStart=/home/domotik/.local/bin/domotik -c /home/domotik/.config/domotik/domotik.toml
 User=domotik
 Group=domotik
 Restart=on-failure

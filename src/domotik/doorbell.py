@@ -5,9 +5,9 @@ import logging
 
 import pigpio
 from aiomqtt import Client
-from paho.mqtt.subscribeoptions import SubscribeOptions
+# from paho.mqtt.subscribeoptions import SubscribeOptions
 
-import config
+import domotik.config as config
 
 _callback = None
 _loop = None

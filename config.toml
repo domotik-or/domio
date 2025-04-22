@@ -28,6 +28,8 @@ port = 1883
 
 [logger]
 aiohttp = "WARNING"
+
+[logger.domotik]
 bmp280 = "INFO"
 doorbell = "INFO"
 linky = "INFO"

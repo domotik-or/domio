@@ -8,7 +8,7 @@ import logging
 import pigpio
 from aiomqtt import Client
 
-import config
+import domotik.config as config
 
 
 _ac220 = False

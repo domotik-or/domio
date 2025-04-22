@@ -27,8 +27,8 @@ import logging
 
 from smbus2 import SMBus
 
-import config
-import i2c
+import domotik.config as config
+import domotik.i2c as i2c
 
 # BMP180 default address.
 BMP180_I2C_ADDR = 0x77
