@@ -7,19 +7,19 @@ import sys
 from aiohttp import web
 # import aiohttp_cors
 
-import domotik.config as config
-from domotik.bmp280 import init as init_bmp280
-from domotik.bmp280 import close as close_bmp280
-from domotik.bmp280 import get_pressure as get_pressure_data
-from domotik.bmp280 import get_sea_level_pressure as get_sea_level_pressure_data
-from domotik.bmp280 import get_temperature as get_temperature_data
-from domotik.doorbell import close as close_doorbell
-from domotik.doorbell import init as init_doorbell
-import domotik.i2c as i2c
-from domotik.linky import close as close_linky
-from domotik.linky import get_data as get_linky_data
-from domotik.linky import init as init_linky
-from domotik.ups import init as init_ups
+import domio.config as config
+from domio.bmp280 import init as init_bmp280
+from domio.bmp280 import close as close_bmp280
+from domio.bmp280 import get_pressure as get_pressure_data
+from domio.bmp280 import get_sea_level_pressure as get_sea_level_pressure_data
+from domio.bmp280 import get_temperature as get_temperature_data
+from domio.doorbell import close as close_doorbell
+from domio.doorbell import init as init_doorbell
+import domio.i2c as i2c
+from domio.linky import close as close_linky
+from domio.linky import get_data as get_linky_data
+from domio.linky import init as init_linky
+from domio.ups import init as init_ups
 
 __version__ = "1.0.0"
 

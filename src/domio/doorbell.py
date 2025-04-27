@@ -2,12 +2,13 @@
 
 import asyncio
 import logging
+import json
 
 import pigpio
 from aiomqtt import Client
 # from paho.mqtt.subscribeoptions import SubscribeOptions
 
-import domotik.config as config
+import domio.config as config
 
 _callback = None
 _loop = None
@@ -92,7 +93,9 @@ async def __subscribe():
                     logger.info("ring the bell")
                     # the task is run using the loop of the main thread enabling
                     # _task to be tested without using a critical section
-                    _task_ring = _loop.create_task(__ring(message.payload))
+                    payload = json.loads(message.payload.decode())
+                    number = int(payload["number"])
+                    _task_ring = _loop.create_task(__ring(number))
         except (asyncio.CancelledError, KeyboardInterrupt):
             pass
 

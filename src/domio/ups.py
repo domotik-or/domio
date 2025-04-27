@@ -8,8 +8,7 @@ import logging
 import pigpio
 from aiomqtt import Client
 
-import domotik.config as config
-
+import domio.config as config
 
 _ac220 = False
 _last_on = datetime.now()

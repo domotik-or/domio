@@ -2,13 +2,13 @@ import logging
 from pathlib import Path
 import tomllib
 
-from domotik.typem import DoorbellConfig
-from domotik.typem import GeneralConfig
-from domotik.typem import I2cConfig
-from domotik.typem import LinkyConfig
-from domotik.typem import MqttConfig
-from domotik.typem import NetworkConfig
-from domotik.typem import UpsConfig
+from domio.typem import DoorbellConfig
+from domio.typem import GeneralConfig
+from domio.typem import I2cConfig
+from domio.typem import LinkyConfig
+from domio.typem import MqttConfig
+from domio.typem import NetworkConfig
+from domio.typem import UpsConfig
 
 doorbell = None
 general = None
