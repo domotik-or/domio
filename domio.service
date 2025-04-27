@@ -7,7 +7,7 @@ After=pigpiod.service
 [Service]
 WorkingDirectory=/home/domotik
 # Environment=""
-ExecStart=/home/domotik/.local/bin/domotik -c /home/domotik/.config/domotik/domotik.toml
+ExecStart=/home/domotik/.local/bin/domio -c /home/domotik/.config/domotik/domio.toml
 User=domotik
 Group=domotik
 Restart=on-failure

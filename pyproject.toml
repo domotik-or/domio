@@ -1,5 +1,5 @@
 [project]
-name = "domotik"
+name = "domio"
 dynamic = ["version"]
 description = "Read Linky serial data and more."
 authors = [{ name = "Franck Barbenoire", email = "fbarbenoire@gmail.com" }]
@@ -11,17 +11,17 @@ dependencies = [
     "pyserial-asyncio==0.6"
 ]
 license = "GPL-3.0-or-later"
-keywords = ["home automation", "domotik"]
+keywords = ["home automation", "mqtt", "pigpio"]
 
 [project.urls]
-Homepage = "https://github.com/domotik-or/domotik"
+Homepage = "https://github.com/domotik-or/domio"
 
 [build-system]
 requires = ["setuptools>=75.0"]
 build-backend = "setuptools.build_meta"
 
 [project.scripts]
-domotik = "domotik.main:main"
+domio = "domio.main:main"
 
 [tool.mypy]
 python_version = 3.11
@@ -33,4 +33,4 @@ ignore_missing_imports = true
 where = ["src"]
 
 [tool.setuptools.dynamic]
-version = {attr = "domotik.main.__version__"}
+version = {attr = "domio.main.__version__"}

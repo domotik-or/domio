@@ -456,23 +456,25 @@ Cloner l'application :
 .. code:: console
 
     $ cd ~
-    $ git clone https://github.com/franckinux/python3-domotik.git
+    $ git clone https://github.com/franckinux/domio.git
 
 Installer des packages Python supplémentaires :
 
 .. code:: console
 
-    $ cd python3-domotik
+    $ cd domotik
     $ pip install --user --break-system-packages -r requirements.txt
 
 Permettre de lancement de l'application au démarrage du RPI :
 
 .. code:: console
 
-    $ cd ~/python3-domotik
-    $ sudo cp python3-domotik.service /etc/systemd/system
-    $ sudo systemctl enable python3-domotik.service
-    $ sudo systemctl start python3-domotik.service
+    $ cd ~/domio
+    $ mkdir -p ~/.config/domotik
+    $ cp config.toml ~/.config/domotik/domio.toml
+    $ sudo cp domio.service /etc/systemd/system
+    $ sudo systemctl enable domio.service
+    $ sudo systemctl start domio.service
 
 Zigbee
 ======
