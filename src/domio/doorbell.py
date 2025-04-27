@@ -58,11 +58,11 @@ def __callback(gpio: int, level: int, tick: int):
         _loop.create_task(__publish())
 
 
-async def __ring():
+async def __ring(number: int):
     global _task_ring
 
     try:
-        for s in range(5):
+        for s in range(number):
             _pi.write(config.doorbell.bell_gpio, True)
             logger.debug("ding")
             await asyncio.sleep(0.4)
@@ -92,7 +92,7 @@ async def __subscribe():
                     logger.info("ring the bell")
                     # the task is run using the loop of the main thread enabling
                     # _task to be tested without using a critical section
-                    _task_ring = _loop.create_task(__ring())
+                    _task_ring = _loop.create_task(__ring(message.payload))
         except (asyncio.CancelledError, KeyboardInterrupt):
             pass
 
