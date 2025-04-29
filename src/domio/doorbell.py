@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import asyncio
+from functools import partial
 import logging
 import json
 
@@ -9,14 +10,15 @@ from aiomqtt import Client
 # from paho.mqtt.subscribeoptions import SubscribeOptions
 
 import domio.config as config
+from domio.utils import done_callback
 
 _callback = None
 _loop = None
 _pi = None
 
 _running = True
+_task_listen = None
 _task_ring = None
-_task_client = None
 
 # logger initial setup
 logger = logging.getLogger(__name__)
@@ -27,7 +29,7 @@ async def init():
     global _callback
     global _loop
     global _pi
-    global _task_client
+    global _task_listen
 
     if _pi is None:
         _pi = pigpio.pi()
@@ -45,7 +47,9 @@ async def init():
         __callback
     )
 
-    _task_client = asyncio.create_task(__subscribe())
+    if _task_listen is None:
+        _task_listen = asyncio.create_task(_listen_task())
+        _task_listen.add_done_callback(partial(done_callback, logger))
 
 
 async def __publish():
@@ -59,7 +63,7 @@ def __callback(gpio: int, level: int, tick: int):
         _loop.create_task(__publish())
 
 
-async def __ring(number: int):
+async def _ring_task(number: int):
     global _task_ring
 
     try:
@@ -82,7 +86,7 @@ async def __ring(number: int):
         _task_ring = None
 
 
-async def __subscribe():
+async def _listen_task():
     global _task_ring
 
     async with Client(config.mqtt.hostname, config.mqtt.port) as client:
@@ -95,7 +99,7 @@ async def __subscribe():
                     # _task to be tested without using a critical section
                     payload = json.loads(message.payload.decode())
                     number = int(payload["number"])
-                    _task_ring = _loop.create_task(__ring(number))
+                    _task_ring = _loop.create_task(_ring_task(number))
         except (asyncio.CancelledError, KeyboardInterrupt):
             pass
 
@@ -104,22 +108,27 @@ async def close():
     global _callback
     global _pi
     global _running
-    global _task_client
+    global _task_listen
     global _task_ring
 
     logger.debug("closing")
 
-    if _task_client is not None:
+    if __task_listen is not None:
         try:
-            _task_client.cancel()
-            await _task_client
-        except asyncio.CancelledError:
+            __task_listen.cancel()
+            await __task_listen
+        except Exception:
+            # task exceptions are handled by the done callback
             pass
-        _task_client = None
+        __task_listen = None
 
     _running = False
     if _task_ring is not None:
-        await _task_ring
+        try:
+            await _task_ring
+        except Exception:
+            # task exceptions are handled by the done callback
+            pass
         _task_ring = None
 
     if _pi is not None:

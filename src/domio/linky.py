@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 import asyncio
+from functools import partial
 import logging
 
 import serial
 import serial_asyncio
 
 import domio.config as config
+from domio.utils import done_callback
 
 _reader = None
 _running = True
@@ -37,7 +39,9 @@ async def init():
         stopbits=getattr(serial, config.linky.stopbits)
     )
 
-    _task = asyncio.create_task(_task_linky())
+    if _task is None:
+        _task = asyncio.create_task(_task_linky())
+        _task.add_done_callback(partial(done_callback, logger))
 
 
 async def _task_linky():
@@ -92,9 +96,17 @@ async def _task_linky():
 
 async def close():
     global _running
+    global _task
 
     _running = False
-    await _task
+
+    if _task is not None:
+        try:
+            await _task
+        except Exception:
+            # task exceptions are handled by the done callback
+            pass
+        _task = None
 
 
 def get_data():

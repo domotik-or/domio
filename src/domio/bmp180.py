@@ -23,12 +23,14 @@
 # (fbarbenoire@gmail.com)
 
 import asyncio
+from functools import partial
 import logging
 
 from smbus2 import SMBus
 
 import domio.config as config
 import domio.i2c as i2c
+from domio.utils import done_callback
 
 # BMP180 default address.
 BMP180_I2C_ADDR = 0x77
@@ -272,29 +274,34 @@ class Bmp180:
         return altitude
 
 
-def init(altitude: float):
+def init(bus: SMBus, altitude: float):
     global _altitude
     global _bmp180
     global _task
 
-    i2c.open_bus(config.i2c.bus)
-
     _altitude = altitude
-    _bmp180 = Bmp180(i2c.get_bus())
+    _bmp180 = Bmp180(bus)
 
     if _task is None:
-        _task = asyncio.create_task(__task())
+        _task = asyncio.create_task(_bmp180_task())
+        _task.add_done_callback(partial(done_callback, logger))
 
 
 async def close():
     global _running
+    global _task
 
     _running = False
     if _task is not None:
-        await _task
+        try:
+            await _task
+        except Exception:
+            # task exceptions are handled by the done callback
+            pass
+        _task = None
 
 
-async def __task():
+async def _bmp180_task():
     global _pressure
     global _running
     global _temperature

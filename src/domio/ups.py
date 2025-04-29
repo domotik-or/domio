@@ -3,12 +3,14 @@
 import asyncio
 from datetime import datetime
 from datetime import timedelta
+from functools import partial
 import logging
 
 import pigpio
 from aiomqtt import Client
 
 import domio.config as config
+from domio.utils import done_callback
 
 _ac220 = False
 _last_on = datetime.now()
@@ -33,7 +35,9 @@ async def init():
 
     _pi.set_mode(config.ups.buzzer_gpio, pigpio.OUTPUT)
 
-    _task = asyncio.create_task(_task_ups())
+    if _task is None:
+        _task = asyncio.create_task(_ups_task())
+        _task.add_done_callback(partial(done_callback, logger))
 
 
 async def _publish(state: bool):
@@ -42,7 +46,7 @@ async def _publish(state: bool):
         await client.publish("home/mains/presence", payload=payload)
 
 
-async def _task_ups():
+async def _ups_task():
     global _ac220
     global _last_on
 
@@ -85,9 +89,17 @@ async def _task_ups():
 
 async def close():
     global _running
+    global _task
 
     _running = False
-    await _task
+
+    if _task is not None:
+        try:
+            await _task
+        except Exception:
+            # task exceptions are handled by the done callback
+            pass
+        _task = None
 
 
 def get_220v_status():

@@ -75,9 +75,9 @@ def _set_loggers_level(config_loggers: dict, module_path: list):
 async def startup(app):
     _set_loggers_level(config.loggers, [])
 
-    i2c.open_bus(config.i2c.bus)
+    bus = i2c.open_bus(config.i2c.bus)
 
-    init_bmp280(config.general.altitude)
+    init_bmp280(bus, config.general.altitude)
     await init_doorbell()
     await init_linky()
     await init_ups()
