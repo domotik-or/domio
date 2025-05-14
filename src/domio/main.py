@@ -21,8 +21,6 @@ from domio.linky import get_data as get_linky_data
 from domio.linky import init as init_linky
 from domio.ups import init as init_ups
 
-__version__ = "1.0.0"
-
 logger = logging.getLogger()
 handler = logging.StreamHandler(stream=sys.stdout)
 formatter = logging.Formatter("%(asctime)s %(module)s %(levelname)s %(message)s")

@@ -17,8 +17,8 @@ keywords = ["home automation", "mqtt", "pigpio"]
 Homepage = "https://github.com/domotik-or/domio"
 
 [build-system]
-requires = ["setuptools>=75.0"]
-build-backend = "setuptools.build_meta"
+requires = ["flit_core >=3.9.0,<4"]
+build-backend = "flit_core.buildapi"
 
 [project.scripts]
 domio = "domio.main:main"
@@ -28,9 +28,3 @@ python_version = 3.11
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.dynamic]
-version = {attr = "domio.main.__version__"}
