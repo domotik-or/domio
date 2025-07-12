@@ -101,7 +101,7 @@ async def close():
         _thread_executor = None
 
 
-async def make_app() -> web.Application:
+def make_app() -> web.Application:
     # run a server
     app = web.Application()
 
@@ -130,7 +130,7 @@ async def run(config_filename: str):
 
     await init()
 
-    app = await make_app()
+    app = make_app()
 
     runner = web.AppRunner(app)
     await runner.setup()
