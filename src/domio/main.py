@@ -1,7 +1,9 @@
 import argparse
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 import importlib
 import logging
+import signal
 import sys
 
 from aiohttp import web
@@ -70,31 +72,38 @@ def _set_loggers_level(config_loggers: dict, module_path: list):
             raise Exception("incorrect type")
 
 
-async def startup(app):
+async def init():
+    global _thread_executor
+
     _set_loggers_level(config.loggers, [])
+
+    _thread_executor = ThreadPoolExecutor(max_workers=3)
 
     bus = i2c.open_bus(config.i2c.bus)
 
     init_bmp280(bus, config.general.altitude)
     await init_doorbell()
-    await init_linky()
+    init_linky(_thread_executor)
     await init_ups()
 
 
-async def cleanup(app):
+async def close():
+    global _thread_executor
+
     await close_bmp280()
     await close_doorbell()
     await close_linky()
 
-    i2c.close_bus
+    i2c.close_bus()
+
+    if _thread_executor is not None:
+        _thread_executor.shutdown()
+        _thread_executor = None
 
 
-async def make_app():
+async def make_app() -> web.Application:
     # run a server
     app = web.Application()
-
-    app.on_startup.append(startup)
-    app.on_cleanup.append(cleanup)
 
     app.router.add_get("/linky", linky_handler)
     app.router.add_get("/pressure", pressure_handler)
@@ -119,23 +128,29 @@ async def make_app():
 async def run(config_filename: str):
     config.read(config_filename)
 
-    # await init()
+    await init()
 
     app = await make_app()
 
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", config.network.server_port)
+    site = web.TCPSite(runner, "0.0.0.0", config.general.port)
+    logger.info("web server is running")
     await site.start()
+    # await running
+
     while True:
         await asyncio.sleep(1)
 
 
-async def close():
-    pass
+def sigterm_handler(_signo, _stack_frame):
+    # raises SystemExit(0):
+    sys.exit(0)
 
 
 def main():
+    signal.signal(signal.SIGTERM, sigterm_handler)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", default="config.toml")
     args = parser.parse_args()

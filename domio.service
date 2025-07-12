@@ -2,7 +2,7 @@
 Description=Linky
 StartLimitIntervalSec=300
 StartLimitBurst=5
-After=pigpiod.service
+After=pigpiod.service mosquitto.service
 
 [Service]
 WorkingDirectory=/home/domotik

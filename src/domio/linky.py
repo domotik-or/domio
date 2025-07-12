@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 import logging
 
@@ -10,7 +11,7 @@ import serial_asyncio
 import domio.config as config
 from domio.utils import done_callback
 
-_reader = None
+_serial = None
 _running = True
 _task = None
 
@@ -27,24 +28,45 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-async def init():
-    global _reader
+def init(executor: ThreadPoolExecutor):
     global _task
+    global _serial
 
-    _reader, _ = await serial_asyncio.open_serial_connection(
-        url=config.linky.serial_port,
-        baudrate=config.linky.baudrate,
-        bytesize=getattr(serial, config.linky.bytesize),
-        parity=getattr(serial, config.linky.parity),
-        stopbits=getattr(serial, config.linky.stopbits)
-    )
+    try:
+        _serial = serial.Serial(
+            port=config.linky.serial_port,
+            baudrate=config.linky.baudrate,
+            timeout=0.2,
+            bytesize=getattr(serial, config.linky.bytesize),
+            parity=getattr(serial, config.linky.parity),
+            stopbits=getattr(serial, config.linky.stopbits)
+        )
+    except serial.serialutil.SerialException:
+        logger.error("cannot initialize airmar serial port")
+    except Exception as exc:
+        logger.error(f"unknown exception {exc}")
+    else:
+        if _task is None:
+            _task = asyncio.create_task(_run_task(executor))
 
-    if _task is None:
-        _task = asyncio.create_task(_task_linky())
-        _task.add_done_callback(partial(done_callback, logger))
+
+async def _run_task(executor: ThreadPoolExecutor):
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(executor, _linky_thread)
 
 
-async def _task_linky():
+def _reset_input_buffer():
+    while True:
+        try:
+            n = _serial.in_waiting
+            if n == 0:
+                return
+            _serial.read(n)
+        except serial.serialutil.SerialException:
+            continue
+
+
+def _linky_thread():
     global _east
     global _easf01
     global _easf02
@@ -53,55 +75,69 @@ async def _task_linky():
     global _smaxsn
     global _smaxsn_1
 
-    try:
+    logger.info("started")
+
+    _serial.reset_input_buffer()
+
+    while _running:
+        data = b""
+
         while _running:
-            line_bytes = (await _reader.readline()).strip()
-
             try:
-                line = line_bytes.decode()
-            except UnicodeDecodeError:
+                d = _serial.read(3)
+            except serial.serialutil.SerialException:
+                sleep(0.1)
                 continue
-            parts = line.split('\t')
 
-            if len(parts) >= 2:
-                checksum = parts[-1]
-                crc_ok = chr((sum(line_bytes[:-1]) & 0x3f) + 0x20) == checksum
-                if crc_ok:
-                    logger.debug(parts[0])
+            if len(d) == 0:
+                # timeout
+                break
+            else:
+                data += d
 
-                    if parts[0] in [
-                        "EAST", "EASF01", "EASF02", "SINSTS", "SMAXSN", "SMAXSN-1"
-                    ]:
-                        # print(parts)
-                        if parts[0] == "EAST":
-                            _east = int(parts[1], 10)
-                        elif parts[0] == "EASF01":
-                            _easf01 = int(parts[1], 10)
-                        elif parts[0] == "EASF02":
-                            _easf02 = int(parts[1], 10)
-                        elif parts[0] == "SINSTS":
-                            _sinsts = int(parts[1], 10)
-                        elif parts[0] == "SMAXSN":
-                            _smaxsn = int(parts[2], 10)
-                        elif parts[0] == "SMAXSN-1":
-                            _smaxsn_1 = int(parts[2], 10)
-                        else:
-                            continue
-                else:
-                    logger.debug("invalid checksum")
+        try:
+            line = data.decode()
+        except UnicodeDecodeError:
+            continue
+        parts = line.split('\t')
 
-    except KeyboardInterrupt:
-        return
+        if len(parts) >= 2:
+            checksum = parts[-1]
+            crc_ok = chr((sum(data[:-1]) & 0x3f) + 0x20) == checksum
+            if crc_ok:
+                logger.debug(parts[0])
+
+                if parts[0] in [
+                    "EAST", "EASF01", "EASF02", "SINSTS", "SMAXSN", "SMAXSN-1"
+                ]:
+                    # print(parts)
+                    if parts[0] == "EAST":
+                        _east = int(parts[1], 10)
+                    elif parts[0] == "EASF01":
+                        _easf01 = int(parts[1], 10)
+                    elif parts[0] == "EASF02":
+                        _easf02 = int(parts[1], 10)
+                    elif parts[0] == "SINSTS":
+                        _sinsts = int(parts[1], 10)
+                    elif parts[0] == "SMAXSN":
+                        _smaxsn = int(parts[2], 10)
+                    elif parts[0] == "SMAXSN-1":
+                        _smaxsn_1 = int(parts[2], 10)
+                    else:
+                        continue
+            else:
+                logger.debug("invalid checksum")
+
+    logger.info("stopped")
 
 
 async def close():
     global _running
     global _task
 
-    _running = False
-
-    if _task is not None:
+    if _task is not None and _running:
         try:
+            _running = False
             await _task
         except Exception:
             # task exceptions are handled by the done callback

@@ -1,5 +1,6 @@
 [general]
 altitude = 326.0
+port = 8100
 
 [i2c]
 bus = 1
@@ -7,9 +8,6 @@ bus = 1
 [doorbell]
 bell_gpio = 24
 button_gpio = 6
-
-[network]
-server_port = 8100
 
 [linky]
 serial_port = "/dev/ttyAMA0"

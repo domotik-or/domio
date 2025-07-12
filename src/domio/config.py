@@ -7,7 +7,6 @@ from domio.typem import GeneralConfig
 from domio.typem import I2cConfig
 from domio.typem import LinkyConfig
 from domio.typem import MqttConfig
-from domio.typem import NetworkConfig
 from domio.typem import UpsConfig
 
 doorbell = None
@@ -43,9 +42,6 @@ def read(config_filename: str):
 
     global mqtt
     mqtt = MqttConfig(**raw_config["mqtt"])
-
-    global network
-    network = NetworkConfig(**raw_config["network"])
 
     global ups
     ups = UpsConfig(**raw_config["ups"])

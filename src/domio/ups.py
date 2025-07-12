@@ -88,6 +88,7 @@ async def _ups_task():
 
 
 async def close():
+    global _pi
     global _running
     global _task
 
@@ -100,6 +101,10 @@ async def close():
             # task exceptions are handled by the done callback
             pass
         _task = None
+
+    if _pi is not None:
+        _pi.stop()
+        _pi = None
 
 
 def get_220v_status():

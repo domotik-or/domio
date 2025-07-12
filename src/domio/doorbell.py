@@ -113,14 +113,14 @@ async def close():
 
     logger.debug("closing")
 
-    if __task_listen is not None:
+    if _task_listen is not None:
         try:
-            __task_listen.cancel()
-            await __task_listen
+            _task_listen.cancel()
+            await _task_listen
         except Exception:
             # task exceptions are handled by the done callback
             pass
-        __task_listen = None
+        _task_listen = None
 
     _running = False
     if _task_ring is not None:

@@ -13,6 +13,7 @@ class DoorbellConfig:
 @dataclass
 class GeneralConfig:
     altitude: float
+    port: int
 
 
 @dataclass
@@ -33,11 +34,6 @@ class LinkyConfig:
 class MqttConfig:
     hostname: str
     port: int
-
-
-@dataclass
-class NetworkConfig:
-    server_port: int
 
 
 @dataclass
