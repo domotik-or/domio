@@ -1,7 +1,7 @@
-import logging
 from pathlib import Path
 import tomllib
 
+from domio.typem import CanConfig
 from domio.typem import DoorbellConfig
 from domio.typem import GeneralConfig
 from domio.typem import I2cConfig
@@ -9,6 +9,7 @@ from domio.typem import LinkyConfig
 from domio.typem import MqttConfig
 from domio.typem import UpsConfig
 
+can = None
 doorbell = None
 general = None
 i2c = None
@@ -24,6 +25,9 @@ def read(config_filename: str):
 
     with open(config_file, "rb") as f:
         raw_config = tomllib.load(f)
+
+    global can
+    can = CanConfig(**raw_config["can"])
 
     global doorbell
     doorbell = DoorbellConfig(**raw_config["doorbell"])

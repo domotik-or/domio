@@ -5,6 +5,12 @@ from dataclasses import dataclass
 
 
 @dataclass
+class CanConfig:
+    channel: str
+    interface: str
+
+
+@dataclass
 class DoorbellConfig:
     bell_gpio: int
     button_gpio: int

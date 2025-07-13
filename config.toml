@@ -2,6 +2,10 @@
 altitude = 326.0
 port = 8100
 
+[can]
+channel = "can0"
+interface = "socketcan"
+
 [i2c]
 bus = 1
 
@@ -26,6 +30,7 @@ port = 1883
 
 [logger]
 aiohttp = "WARNING"
+can = "WARNING"
 
 [logger.domio]
 bmp280 = "INFO"

@@ -15,6 +15,10 @@ from domio.bmp280 import close as close_bmp280
 from domio.bmp280 import get_pressure as get_pressure_data
 from domio.bmp280 import get_sea_level_pressure as get_sea_level_pressure_data
 from domio.bmp280 import get_temperature as get_temperature_data
+from domio.canio import get_humidity as get_humidity_can
+from domio.canio import get_temperature as get_temperature_can
+from domio.canio import init as init_can
+from domio.canio import close as close_can
 from domio.doorbell import close as close_doorbell
 from domio.doorbell import init as init_doorbell
 import domio.i2c as i2c
@@ -29,6 +33,14 @@ formatter = logging.Formatter("%(asctime)s %(module)s %(levelname)s %(message)s"
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
+
+
+async def outdoor_handler(request):
+    data = {
+        "humidity": get_humidity_can(),
+        "tempertaure": get_temperature_can(),
+    }
+    return web.json_response({"data": data})
 
 
 async def linky_handler(request):
@@ -81,6 +93,7 @@ async def init():
 
     bus = i2c.open_bus(config.i2c.bus)
 
+    init_can()
     init_bmp280(bus, config.general.altitude)
     await init_doorbell()
     init_linky(_thread_executor)
@@ -91,6 +104,7 @@ async def close():
     global _thread_executor
 
     await close_bmp280()
+    await close_can()
     await close_doorbell()
     await close_linky()
 
@@ -106,6 +120,7 @@ def make_app() -> web.Application:
     app = web.Application()
 
     app.router.add_get("/linky", linky_handler)
+    app.router.add_get("/outdoor", outdoor_handler)
     app.router.add_get("/pressure", pressure_handler)
     app.router.add_get("/pressure/sealevel", pressure_at_sea_level_handler)
     app.router.add_get("/temperature", temperature_handler)
