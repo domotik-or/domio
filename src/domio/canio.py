@@ -29,7 +29,12 @@ def init():
     global _reader
     global _task
 
-    _bus = can.Bus(interface="socketcan", channel="can0")
+    try:
+        _bus = can.Bus(interface="socketcan", channel="can0")
+    except can.exceptions.CanOperationError as exc:
+        logger.error(f"something when wrong when connectingg to can socket: {exc}")
+        return
+
     _reader = can.AsyncBufferedReader()
 
     listeners = [_reader]
