@@ -38,7 +38,7 @@ logger.setLevel(logging.DEBUG)
 async def outdoor_handler(request):
     data = {
         "humidity": get_humidity_can(),
-        "tempertaure": get_temperature_can(),
+        "temperature": get_temperature_can(),
     }
     return web.json_response({"data": data})
 
