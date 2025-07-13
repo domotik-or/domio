@@ -2,14 +2,11 @@
 
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from functools import partial
 import logging
 
 import serial
-import serial_asyncio
 
 import domio.config as config
-from domio.utils import done_callback
 
 _serial = None
 _running = True
@@ -159,16 +156,20 @@ def get_data():
 
 # main is used for test purpose as standalone
 async def run(config_filename: str):
+    from concurrent.futures import ThreadPoolExecutor
     global _running
 
     config.read(config_filename)
 
-    await init()
+    thread_executor = ThreadPoolExecutor(max_workers=3)
+    await init(thread_executor)
 
     for _ in range(20):
         data = get_data()
         logger.debug(data)
         await asyncio.sleep(3)
+
+    thread_executor.shutdown()
 
 
 if __name__ == "__main__":
