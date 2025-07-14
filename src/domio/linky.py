@@ -33,7 +33,7 @@ def init(executor: ThreadPoolExecutor):
         _serial = serial.Serial(
             port=config.linky.serial_port,
             baudrate=config.linky.baudrate,
-            timeout=0.2,
+            timeout=0.5,
             bytesize=getattr(serial, config.linky.bytesize),
             parity=getattr(serial, config.linky.parity),
             stopbits=getattr(serial, config.linky.stopbits)
@@ -75,55 +75,83 @@ def _linky_thread():
     logger.info("started")
 
     _serial.reset_input_buffer()
+    logger.debug("ready")
 
+    data = ""
+    line = ""
     while _running:
-        data = b""
+        try:
+            d = _serial.read(100)
+        except serial.serialutil.SerialException:
+            sleep(0.1)
+            continue
 
-        while _running:
-            try:
-                d = _serial.read(3)
-            except serial.serialutil.SerialException:
-                sleep(0.1)
-                continue
-
-            if len(d) == 0:
-                # timeout
-                break
-            else:
-                data += d
+        if len(d) == 0:
+            # timeout
+            continue
 
         try:
-            line = data.decode()
+            data += d.decode()
         except UnicodeDecodeError:
             continue
-        parts = line.split('\t')
 
-        if len(parts) >= 2:
-            checksum = parts[-1]
-            crc_ok = chr((sum(data[:-1]) & 0x3f) + 0x20) == checksum
-            if crc_ok:
-                logger.debug(parts[0])
+        while True:
+            if data[-1] in "\r\x03\x02\n":
+                break
 
-                if parts[0] in [
-                    "EAST", "EASF01", "EASF02", "SINSTS", "SMAXSN", "SMAXSN-1"
-                ]:
-                    # print(parts)
-                    if parts[0] == "EAST":
-                        _east = int(parts[1], 10)
-                    elif parts[0] == "EASF01":
-                        _easf01 = int(parts[1], 10)
-                    elif parts[0] == "EASF02":
-                        _easf02 = int(parts[1], 10)
-                    elif parts[0] == "SINSTS":
-                        _sinsts = int(parts[1], 10)
-                    elif parts[0] == "SMAXSN":
-                        _smaxsn = int(parts[2], 10)
-                    elif parts[0] == "SMAXSN-1":
-                        _smaxsn_1 = int(parts[2], 10)
-                    else:
-                        continue
+            index1 = data.find("\r\n")
+            index2 = data.find("\r\x03\x02\n")
+
+            if index1 == -1:
+                # sometimes the end of line is \r\x03\x02\n not \r\n
+                if index2 == -1:
+                    break
+                else:
+                    line += data[:index2]
+                    data = data[index2 + 4:]
             else:
-                logger.debug("invalid checksum")
+                if index2 == -1:
+                    line += data[:index1]
+                    data = data[index1 + 2:]
+                else:
+                    if index1 < index2:
+                        line += data[:index1]
+                        data = data[index1 + 2:]
+                    else:
+                        line += data[:index2]
+                        data = data[index2 + 4:]
+
+            line = line.strip()
+            parts = line.split('\t')
+
+            if len(parts) >= 2:
+                checksum = parts[-1]
+                crc_ok = chr((sum(bytes(line[:-1], encoding="ascii")) & 0x3f) + 0x20) == checksum
+                if crc_ok:
+                    logger.debug(parts[0])
+
+                    if parts[0] in [
+                        "EAST", "EASF01", "EASF02", "SINSTS", "SMAXSN", "SMAXSN-1"
+                    ]:
+                        # print(parts)
+                        if parts[0] == "EAST":
+                            _east = int(parts[1], 10)
+                        elif parts[0] == "EASF01":
+                            _easf01 = int(parts[1], 10)
+                        elif parts[0] == "EASF02":
+                            _easf02 = int(parts[1], 10)
+                        elif parts[0] == "SINSTS":
+                            _sinsts = int(parts[1], 10)
+                        elif parts[0] == "SMAXSN":
+                            _smaxsn = int(parts[2], 10)
+                        elif parts[0] == "SMAXSN-1":
+                            _smaxsn_1 = int(parts[2], 10)
+                        else:
+                            continue
+                else:
+                    logger.debug("invalid checksum")
+
+            line = ""
 
     logger.info("stopped")
 
