@@ -190,7 +190,7 @@ async def run(config_filename: str):
     config.read(config_filename)
 
     thread_executor = ThreadPoolExecutor(max_workers=3)
-    await init(thread_executor)
+    init(thread_executor)
 
     for _ in range(20):
         data = get_data()
