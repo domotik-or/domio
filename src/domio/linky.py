@@ -3,6 +3,7 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import logging
+import time
 
 import serial
 
@@ -83,7 +84,7 @@ def _linky_thread():
         try:
             d = _serial.read(100)
         except serial.serialutil.SerialException:
-            sleep(0.1)
+            time.sleep(0.1)
             continue
 
         if len(d) == 0:
@@ -185,7 +186,6 @@ def get_data():
 # main is used for test purpose as standalone
 async def run(config_filename: str):
     from concurrent.futures import ThreadPoolExecutor
-    global _running
 
     config.read(config_filename)
 
