@@ -11,7 +11,6 @@ import logging
 from smbus2 import SMBus
 
 import domio.config as config
-import domio.i2c as i2c
 from domio.utils import done_callback
 
 # BMP280 default address.
@@ -49,18 +48,18 @@ TEMPERATURE = 0xFA
 RESET_CMD = 0xB6
 
 OVERSAMPLING_P_NONE = 0b000
-OVERSAMPLING_P_x1   = 0b001
-OVERSAMPLING_P_x2   = 0b010
-OVERSAMPLING_P_x4   = 0b011
-OVERSAMPLING_P_x8   = 0b100
-OVERSAMPLING_P_x16  = 0b101
+OVERSAMPLING_P_x1 = 0b001
+OVERSAMPLING_P_x2 = 0b010
+OVERSAMPLING_P_x4 = 0b011
+OVERSAMPLING_P_x8 = 0b100
+OVERSAMPLING_P_x16 = 0b101
 
 OVERSAMPLING_T_NONE = 0b000
-OVERSAMPLING_T_x1   = 0b001
-OVERSAMPLING_T_x2   = 0b010
-OVERSAMPLING_T_x4   = 0b011
-OVERSAMPLING_T_x8   = 0b100
-OVERSAMPLING_T_x16  = 0b101
+OVERSAMPLING_T_x1 = 0b001
+OVERSAMPLING_T_x2 = 0b010
+OVERSAMPLING_T_x4 = 0b011
+OVERSAMPLING_T_x8 = 0b100
+OVERSAMPLING_T_x16 = 0b101
 
 T_STANDBY_0p5 = 0b000
 T_STANDBY_62p5 = 0b001
@@ -72,9 +71,9 @@ T_STANDBY_2000 = 0b110
 T_STANDBY_4000 = 0b111
 
 IIR_FILTER_OFF = 0b000
-IIR_FILTER_x2  = 0b001
-IIR_FILTER_x4  = 0b010
-IIR_FILTER_x8  = 0b011
+IIR_FILTER_x2 = 0b001
+IIR_FILTER_x4 = 0b010
+IIR_FILTER_x8 = 0b011
 IIR_FILTER_x16 = 0b100
 
 _altitude = 0.0
@@ -119,9 +118,9 @@ class Bmp280:
     def read_device_id(self):
         return self.__i2c.read_byte_data(BMP280_I2C_ADDR, DEVICE_ID)
 
-    def device_reset(self):
+    async def device_reset(self):
         self.bus.write_byte_data(self.BMP280_ADDR, self.RESET, self.RESET_CMD)
-        sleep(1)
+        await asyncio.sleep(1)
 
     def bmp280_init(self, mode, oversampling_p, oversampling_t, filter, standby):
         ctrl_meas_reg = mode + (oversampling_p << 2) + (oversampling_t << 5)
@@ -235,15 +234,20 @@ def get_temperature() -> float:
 
 
 async def run(config_filename: str):
+    import domio.i2c as i2c
+
     config.read(config_filename)
 
-    init(config.i2c.bus)
+    bus = i2c.open_bus(config.i2c.bus)
 
-    # pressure = await _bmp280.read_pressure()
-    pressure = _bmp280.read_pressure()
-    temperature = _bmp280.read_temperature()
+    bmp280 = Bmp280(bus, mode=NORMAL_MODE)
+
+    pressure = bmp280.read_pressure()
+    temperature = bmp280.read_temperature()
 
     logger.debug(f"temperature: {temperature}°C, pressure: {pressure} Pa")
+
+    i2c.close_bus()
 
 
 # main is used for test purpose as standalone
