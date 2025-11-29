@@ -19,13 +19,13 @@ from domio.canio import get_humidity as get_humidity_can
 from domio.canio import get_temperature as get_temperature_can
 from domio.canio import init as init_can
 from domio.canio import close as close_can
-from domio.doorbell import close as close_doorbell
-from domio.doorbell import init as init_doorbell
+from domio.gpio import close as close_gpio
+from domio.gpio import init as init_gpio
 import domio.i2c as i2c
 from domio.linky import close as close_linky
 from domio.linky import get_data as get_linky_data
 from domio.linky import init as init_linky
-from domio.ups import init as init_ups
+from domio.utils import set_loggers_level
 
 logger = logging.getLogger()
 handler = logging.StreamHandler(stream=sys.stdout)
@@ -63,31 +63,10 @@ async def temperature_handler(request):
     return web.json_response({"data": {"temperature": value}})
 
 
-def _set_loggers_level(config_loggers: dict, module_path: list):
-    # set log level of modules logger
-    for lg_name, lg_config in config_loggers.items():
-        if isinstance(lg_config, dict):
-            module_path.append(lg_name)
-            _set_loggers_level(lg_config, module_path)
-        elif isinstance(lg_config, str):
-            this_module_path = '.'.join(module_path + [lg_name])
-            try:
-                importlib.import_module(this_module_path)
-            except ModuleNotFoundError:
-                logger.warning(f"module {this_module_path} not found")
-                continue
-
-            level = getattr(logging, lg_config)
-            if this_module_path in logging.Logger.manager.loggerDict.keys():
-                logging.getLogger(this_module_path).setLevel(level)
-        else:
-            raise Exception("incorrect type")
-
-
 async def init():
     global _thread_executor
 
-    _set_loggers_level(config.loggers, [])
+    set_loggers_level(config.loggers)
 
     _thread_executor = ThreadPoolExecutor(max_workers=3)
 
@@ -95,9 +74,8 @@ async def init():
 
     init_can()
     init_bmp280(bus, config.general.altitude)
-    await init_doorbell()
+    await init_gpio()
     init_linky(_thread_executor)
-    await init_ups()
 
 
 async def close():
@@ -105,8 +83,8 @@ async def close():
 
     await close_bmp280()
     await close_can()
-    await close_doorbell()
     await close_linky()
+    await close_gpio()
 
     i2c.close_bus()
 

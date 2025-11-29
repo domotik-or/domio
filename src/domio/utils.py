@@ -1,13 +1,10 @@
 import asyncio
-import dataclasses
-import json
+import importlib
+import logging
 
-
-class EnhancedJSONEncoder(json.JSONEncoder):
-    def default(self, o):
-        if dataclasses.is_dataclass(o):
-            return dataclasses.asdict(o)
-        return super().default(o)
+# logger initial setup
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 async def exec_cmd(cmd: str) -> tuple[int | None, str, str]:
@@ -47,3 +44,20 @@ def done_callback(logger, task):
     if exc is not None and not isinstance(exc, asyncio.exceptions.CancelledError):
         exc_info = (type(exc), exc, exc.__traceback__)
         logger.error(exc, exc_info=exc_info)
+
+
+def set_loggers_level(config_loggers: dict):
+    # set log level of modules logger
+    for log in config_loggers:
+        module = log["module"]
+        level = log["level"]
+        try:
+            importlib.import_module(module)
+        except ModuleNotFoundError:
+            logger.warning(f"module {module} not found")
+            continue
+
+        if module in logging.Logger.manager.loggerDict.keys():
+            logging.getLogger(module).setLevel(level)
+        else:
+            raise Exception("incorrect type")

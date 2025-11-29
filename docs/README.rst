@@ -427,16 +427,14 @@ Installation de packages supplémentaires
 
 .. code:: console
 
-    $ sudo install vim git pigpio i2c-tools spi-tools picocom
+    $ sudo install vim git i2c-tools spi-tools picocom
     $ sudo install python3-setuptools python3-pip
     $ sudo install ufw
 
-Démarrage du daemon `pigpiod` :
+Démarrage du daemon `ufw` :
 
 .. code:: console
 
-    $ sudo systemctl start pigpiod
-    $ sudo systemctl enable pigpiod
     $ sudo systemctl start ufw
     $ sudo systemctl enable ufw
 

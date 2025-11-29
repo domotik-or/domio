@@ -1,5 +1,6 @@
 [general]
 altitude = 326.0
+gpio_device = "/dev/gpiochip0"
 port = 8100
 
 [can]
@@ -9,31 +10,51 @@ interface = "socketcan"
 [i2c]
 bus = 1
 
-[doorbell]
-bell_gpio = 24
-button_gpio = 6
+[gpio]
+buzzer = { direction = "output", gpio_num = 23, output_value="inactive" }
+doorbell_output = { direction = "output", gpio_num = 24, output_value="inactive" }
+
+[gpio.doorbell_button]
+direction = "input"
+gpio_num = 6
+debounce_period = 10000
+edge_detection = "rising"
+bias = "pull_down"
+
+[gpio.ac220]
+direction = "input"
+gpio_num = 5
+debounce_period = 10000
+edge_detection = "rising"
+bias = "disabled"
 
 [linky]
 serial_port = "/dev/ttyAMA0"
 baudrate = 9600
-bytesize = "SEVENBITS"
-parity = "PARITY_EVEN"
-stopbits="STOPBITS_ONE"
-
-[ups]
-ac220_gpio = 5
-buzzer_gpio = 23
+bytesize = "sevenbits"
+parity = "parity_even"
+stopbits="stopbits_one"
 
 [mqtt]
 hostname = "localhost"
 port = 1883
 
-[logger]
-aiohttp = "WARNING"
-can = "WARNING"
+[[logger]]
+module = "aiohttp"
+level = "WARNING"
 
-[logger.domio]
-bmp280 = "INFO"
-doorbell = "INFO"
-linky = "INFO"
-ups = "INFO"
+[[logger]]
+module = "can"
+level = "WARNING"
+
+[[logger]]
+module = "odomio.bmp280"
+level = "INFO"
+
+[[logger]]
+module = "domio.gpio"
+level = "INFO"
+
+[[logger]]
+module = "domio.linky"
+level = "INFO"

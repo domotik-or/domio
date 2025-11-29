@@ -35,9 +35,9 @@ def init(executor: ThreadPoolExecutor):
             port=config.linky.serial_port,
             baudrate=config.linky.baudrate,
             timeout=0.5,
-            bytesize=getattr(serial, config.linky.bytesize),
-            parity=getattr(serial, config.linky.parity),
-            stopbits=getattr(serial, config.linky.stopbits)
+            bytesize=getattr(serial, config.linky.bytesize.upper()),
+            parity=getattr(serial, config.linky.parity.upper()),
+            stopbits=getattr(serial, config.linky.stopbits.uper())
         )
     except serial.serialutil.SerialException:
         logger.error("cannot initialize airmar serial port")
