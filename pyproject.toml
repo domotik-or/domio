@@ -9,7 +9,9 @@ dependencies = [
     "aiohttp==3.13.2",  # upgraded from meta-openembedded recipe
     "aiomqtt==2.4.0",
     "gpiod==2.4.0",  # upgraded from meta-openembedded recipe
-    "python-can==4.6.1"  # upgraded from meta-openembedded recipe
+    "python-can==4.6.1",  # upgraded from meta-openembedded recipe
+    "pyserial==3.5",
+    "smbus2==0.6.0"  # upgraded from meta-openembedded recipe
 ]
 # license = "GPL-3.0-or-later"
 keywords = ["home automation", "mqtt", "gpiod"]
