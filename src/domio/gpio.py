@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import asyncio
-import datetime
+from datetime import datetime
+from datetime import timedelta
 from functools import partial
 import logging
 import json
@@ -172,7 +173,7 @@ async def _ups_task():
             if _ac220:
                 _last_on = datetime.now()
             else:
-                if datetime.now() - _last_on > datetime.timedelta(minutes=4):
+                if datetime.now() - _last_on > timedelta(minutes=4):
                     # shutdown after 5 minutes after lacking 220 V power
                     logger.debug("shutdown requested")
                     await asyncio.create_subprocess_shell(

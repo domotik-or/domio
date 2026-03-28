@@ -48,7 +48,7 @@ module = "can"
 level = "WARNING"
 
 [[logger]]
-module = "odomio.bmp280"
+module = "domio.bmp280"
 level = "INFO"
 
 [[logger]]
