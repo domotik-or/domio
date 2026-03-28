@@ -126,7 +126,7 @@ async def _ring_doorbell_task(number: int):
             if not _running:
                 return
     finally:
-        set_value(gpio_num, True)
+        set_value(gpio_num, False)
         _doorbell_ring_task_handle = None
 
 
