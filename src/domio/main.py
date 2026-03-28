@@ -27,7 +27,9 @@ from domio.linky import init as linky_init
 from domio.logger import close as logger_close
 from domio.logger import init as logger_init
 
+# logger initial setup
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 async def outdoor_handler(request):
