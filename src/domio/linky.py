@@ -39,8 +39,8 @@ def init(executor: ThreadPoolExecutor):
             parity=getattr(serial, config.linky.parity.upper()),
             stopbits=getattr(serial, config.linky.stopbits.upper())
         )
-    except serial.serialutil.SerialException:
-        logger.error("cannot initialize airmar serial port")
+    except serial.serialutil.SerialException as exc:
+        logger.error(f"cannot initialize linky serial port ({exc})")
     except Exception as exc:
         logger.error(f"unknown exception {exc}")
     else:
