@@ -1,5 +1,4 @@
 import asyncio
-import importlib
 import logging
 
 # logger initial setup
@@ -44,20 +43,3 @@ def done_callback(logger, task):
     if exc is not None and not isinstance(exc, asyncio.exceptions.CancelledError):
         exc_info = (type(exc), exc, exc.__traceback__)
         logger.error(exc, exc_info=exc_info)
-
-
-def set_loggers_level(config_loggers: dict):
-    # set log level of modules logger
-    for log in config_loggers:
-        module = log["module"]
-        level = log["level"]
-        try:
-            importlib.import_module(module)
-        except ModuleNotFoundError:
-            logger.warning(f"module {module} not found")
-            continue
-
-        if module in logging.Logger.manager.loggerDict.keys():
-            logging.getLogger(module).setLevel(level)
-        else:
-            raise Exception("incorrect type")

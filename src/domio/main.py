@@ -1,7 +1,6 @@
 import argparse
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-import importlib
 import logging
 import signal
 import sys
@@ -10,29 +9,25 @@ from aiohttp import web
 # import aiohttp_cors
 
 import domio.config as config
-from domio.bmp280 import init as init_bmp280
-from domio.bmp280 import close as close_bmp280
+from domio.bmp280 import init as bmp280_init
+from domio.bmp280 import close as bmp280_close
 from domio.bmp280 import get_pressure as get_pressure_data
 from domio.bmp280 import get_sea_level_pressure as get_sea_level_pressure_data
 from domio.bmp280 import get_temperature as get_temperature_data
 from domio.canio import get_humidity as get_humidity_can
 from domio.canio import get_temperature as get_temperature_can
-from domio.canio import init as init_can
-from domio.canio import close as close_can
-from domio.gpio import close as close_gpio
-from domio.gpio import init as init_gpio
+from domio.canio import init as can_init
+from domio.canio import close as can_close
+from domio.gpio import close as gpio_close
+from domio.gpio import init as gpio_init
 import domio.i2c as i2c
-from domio.linky import close as close_linky
 from domio.linky import get_data as get_linky_data
-from domio.linky import init as init_linky
-from domio.utils import set_loggers_level
+from domio.linky import close as linky_close
+from domio.linky import init as linky_init
+from domio.logger import close as logger_close
+from domio.logger import init as logger_init
 
-logger = logging.getLogger()
-handler = logging.StreamHandler(stream=sys.stdout)
-formatter = logging.Formatter("%(asctime)s %(module)s %(levelname)s %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-logger.setLevel(logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 async def outdoor_handler(request):
@@ -66,25 +61,25 @@ async def temperature_handler(request):
 async def init():
     global _thread_executor
 
-    set_loggers_level(config.loggers)
-
     _thread_executor = ThreadPoolExecutor(max_workers=3)
 
     bus = i2c.open_bus(config.i2c.bus)
 
-    init_can()
-    init_bmp280(bus, config.general.altitude)
-    await init_gpio()
-    init_linky(_thread_executor)
+    logger_init(config.loggers)
+    can_init()
+    bmp280_init(bus, config.general.altitude)
+    await gpio_init()
+    linky_init(_thread_executor)
 
 
 async def close():
     global _thread_executor
 
-    await close_bmp280()
-    await close_can()
-    await close_linky()
-    await close_gpio()
+    await bmp280_close()
+    await can_close()
+    await linky_close()
+    await gpio_close()
+    logger_close()
 
     i2c.close_bus()
 
